@@ -6,7 +6,7 @@
 
 This repository implements the firmware for the hoveboard sideboards. The hoveboard comes with two identical sideboards that can be flashed with this firmware.
 
-### ► If you have an STM32 sideboard check-out the repo [hoverboard-sideboard-hack-STM](link)
+### ► If you have an STM32 sideboard check-out the repo [hoverboard-sideboard-hack-STM](https://github.com/EmanuelFeru/hoverboard-sideboard-hack-STM)
 
 ---
 ## Hardware
