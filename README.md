@@ -1,6 +1,6 @@
 # hoverboard-sideboard-hack-GD
 
-[![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC.svg?branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-firmware-hack-FOC)
+[![Build Status](https://travis-ci.com/EmanuelFeru/hoverboard-sideboard-hack-GD.svg?token=PqYy6QC9o8nDVwJPGmrv&branch=master)](https://travis-ci.com/EmanuelFeru/hoverboard-sideboard-hack-GD)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
 
@@ -42,17 +42,19 @@ To build and flash choose one of the following methods:
 
 ### Method 1: Using Keil uVision (recommended)
 
-In [Keil uVision](https://www.keil.com/download/product/), open the [sideboard-hack.uvproj](/MDK-ARM/) and click Build Target (or press F7). Then to flash the firmware, click Load Code (or press F8).
+- in [Keil uVision](https://www.keil.com/download/product/), open the [sideboard-hack.uvproj](/MDK-ARM/) 
+- click Build Target (or press F7) to build the firmware
+- click Load Code (or press F8) to flash the firmware.
 
 ### Method 2: Using Ubuntu
 
-Prerequisites: install [ST-Flash utility](https://github.com/texane/stlink).
+- prerequisites: install [ST-Flash utility](https://github.com/texane/stlink).
 
-Open a terminal in the repo check-out folder and type:
+- open a terminal in the repo check-out folder and type:
 ```
 make
 ```
-then you can simply flash the firmware by typing:
+- flash the firmware by typing:
 ```
 make flash
 ```
@@ -72,7 +74,7 @@ Of course the firmware can be further customized for other needs or projects.
 ---
 ## 3D Visualization Demo
 
-By [converting Quaternions to Euler angles](https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles), we can make a [3D visualization example](/docs/sketch_processing/sketch_processing.pde)) in [Processing](https://processing.org/) as shown here:
+By [converting Quaternions to Euler angles](https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles), we can make a [3D visualization example](/docs/sketch_processing/sketch_processing.pde) in [Processing](https://processing.org/) as shown here:
 
 ![sketch_pic](/docs/pictures/sketch_processing_pic.png)
 
