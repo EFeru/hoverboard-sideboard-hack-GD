@@ -36,7 +36,7 @@ For more details see the [MPU-6050 datasheet](/docs/1_MPU-6000-Datasheet.pdf) an
 
 On the sideboard, there is a debugging header with GND, 3V3, SWDIO and SWCLK. Connect GND, SWDIO and SWCLK to your ST-Link V2 programmer. The 3V3 can be either obtained by connecting the pin to the ST-Link programmer or powering the sideboard with 12/15V.
 
-If you never flashed your sideboard before, the MCU is probably locked. To unlock the flash, check-out the [wiki page](link).
+If you have never flashed your sideboard before, the MCU is probably locked. To unlock the flash, check-out the wiki page [How to Unlock MCU flash](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC/wiki/How-to-Unlock-MCU-flash).
 
 To build and flash choose one of the following methods:
 
@@ -74,7 +74,7 @@ Of course the firmware can be further customized for other needs or projects.
 ---
 ## 3D Visualization Demo
 
-By [converting Quaternions to Euler angles](https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles), we can make a [3D visualization example](/docs/sketch_processing/sketch_processing.pde) in [Processing](https://processing.org/) as shown here:
+By [converting Quaternions to Euler angles](https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles), we can make a [3D visualization example](/docs/sketch_processing/sketch_processing.pde) in [Processing](https://processing.org/) as shown below. For this Demo use the VARIANT_HOVERBOARD.
 
 ![sketch_pic](/docs/pictures/sketch_processing_pic.png)
 
@@ -84,7 +84,7 @@ By [converting Quaternions to Euler angles](https://en.wikipedia.org/wiki/Conver
 
 Every contribution to this repository is highly appriciated! Feel free to create pull requests to improve this firmware as ultimately you are going to help everyone. 
 
-If you want to donate to keep this firmware updated, check-out the link below:
+If you want to donate to keep this firmware updated, use the link below:
 
 [![paypal](https://www.paypalobjects.com/en_US/NL/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
 
