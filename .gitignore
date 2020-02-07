@@ -1,0 +1,14 @@
+.pio/
+.pioenvs/
+.vscode/
+MDK-ARM/Listing/
+MDK-ARM/Objects/
+MDK-ARM/*.uvgui
+!build/VARIANT_DEBUG/firmware.hex
+!build/VARIANT_DEBUG/firmware.bin
+!build/VARIANT_DEBUG/firmware.elf
+!build/VARIANT_DEBUG/firmware.axf
+!build/VARIANT_HOVERBOARD/firmware.hex
+!build/VARIANT_HOVERBOARD/firmware.bin
+!build/VARIANT_HOVERBOARD/firmware.elf
+!build/VARIANT_HOVERBOARD/firmware.axf
