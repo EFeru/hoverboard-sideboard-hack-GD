@@ -14,7 +14,7 @@ This repository implements the firmware for the hoveboard sideboards. The hovebo
 The original sideboard hardware supports one 4-pin cable that originally was connected to the hoveboard mainboard. It breaks out GND, 12/15V and USART. Additionally, two ports are used to connect to the LED boards. On the back of the board, two Photo Interrupter Optical Switches can be found, originally used to detect if a human is standing on the hoverboard.
 ![sideboard](/docs/pictures/sideboard_pinout.png)
 
-The LED boards consist of colored LEDs (blue, red, green, orange) used for design and to inform the user about the current hoverboard state.
+The LED boards consist of colored LEDs (blue, red, green, orange) used for design and to inform the user about the current hoverboard state. Below the pinout of the LED boards is shown.
 ![ledboard](/docs/pictures/ledboard_pinout.png)
 
 The heart of the sideboard is a [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) with the pinout shown in the follwing figure:
@@ -66,7 +66,7 @@ packages/
 ### Method 2: Using Keil uVision
 
 - in [Keil uVision](https://www.keil.com/download/product/), open the [sideboard-hack.uvproj](/MDK-ARM/)
-- if you are asked to install missing package, click `Yes`
+- if you are asked to install missing packages, click Yes
 - click Build Target (or press F7) to build the firmware
 - click Load Code (or press F8) to flash the firmware.
 
