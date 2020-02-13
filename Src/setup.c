@@ -29,17 +29,17 @@
 extern volatile ErrStatus     	status;
 
 // Private variables
-static rcu_periph_enum USART_CLK[USARTn]	= {USART_AUX_CLK,
-																						 USART_MAIN_CLK
-																						};
+static rcu_periph_enum USART_CLK[USARTn]	= { USART_AUX_CLK,
+												USART_MAIN_CLK
+												};
 
-static uint32_t USART_TX_PIN[USARTn] 			= {USART_AUX_TX_PIN,
-																						 USART_MAIN_TX_PIN
-																						};
+static uint32_t USART_TX_PIN[USARTn] 		= { USART_AUX_TX_PIN,
+											 	USART_MAIN_TX_PIN
+												};
 
-static uint32_t USART_RX_PIN[USARTn] 			= {USART_AUX_RX_PIN,
-																						 USART_MAIN_RX_PIN
-																						};
+static uint32_t USART_RX_PIN[USARTn] 		= { USART_AUX_RX_PIN,
+											 	USART_MAIN_RX_PIN
+												};
 
 																						
 void gpio_config(void) {
@@ -82,11 +82,11 @@ void gpio_config(void) {
 	/* =========================== Configure I2C GPIOs =========================== */		
 	/* enable I2C clock */
 	rcu_periph_clock_enable(RCU_GPIOB);
-  rcu_periph_clock_enable(MPU_RCU_I2C);
+  	rcu_periph_clock_enable(MPU_RCU_I2C);
 	
 	/* connect PB6 to I2C_SCL and PB7 to I2C_SDA */
-  gpio_af_set(MPU_SCL_GPIO_Port, GPIO_AF_1, MPU_SCL_Pin);
-  gpio_af_set(MPU_SDA_GPIO_Port, GPIO_AF_1, MPU_SDA_Pin);
+	gpio_af_set(MPU_SCL_GPIO_Port, GPIO_AF_1, MPU_SCL_Pin);
+	gpio_af_set(MPU_SDA_GPIO_Port, GPIO_AF_1, MPU_SDA_Pin);
 	
 	/* configure GPIO port */
 	gpio_mode_set(MPU_SCL_GPIO_Port, GPIO_MODE_AF, GPIO_PUPD_PULLUP, MPU_SCL_Pin);
@@ -195,7 +195,7 @@ void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {
 	// --------------------------- TX Channel ---------------------------	
 
 	/* enable DMA clock */
-  rcu_periph_clock_enable(RCU_DMA);
+  	rcu_periph_clock_enable(RCU_DMA);
 	
 	/* deinitialize DMA channel2 */
 	dma_deinit(DMA_CH3);
@@ -203,11 +203,11 @@ void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {
 	dma_init_struct.memory_addr 		= (uint32_t)pData;
 	dma_init_struct.memory_inc 			= DMA_MEMORY_INCREASE_ENABLE;
 	dma_init_struct.memory_width 		= DMA_MEMORY_WIDTH_8BIT;
-	dma_init_struct.number 					= Size;
+	dma_init_struct.number 				= Size;
 	dma_init_struct.periph_addr 		= USART1_TDATA_ADDRESS;
 	dma_init_struct.periph_inc 			= DMA_PERIPH_INCREASE_DISABLE;
 	dma_init_struct.periph_width 		= DMA_PERIPHERAL_WIDTH_8BIT;
-	dma_init_struct.priority 				= DMA_PRIORITY_ULTRA_HIGH;			// Priorities: *_LOW, *_MEDIUM, *_HIGH, *_ULTRA_HIGH,
+	dma_init_struct.priority 			= DMA_PRIORITY_ULTRA_HIGH;			// Priorities: *_LOW, *_MEDIUM, *_HIGH, *_ULTRA_HIGH,
 	dma_init(DMA_CH3, dma_init_struct);
 	
 	/* configure DMA mode */
@@ -237,11 +237,11 @@ void usart_Rx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {
 	dma_init_struct.memory_addr 		= (uint32_t)pData;
 	dma_init_struct.memory_inc 			= DMA_MEMORY_INCREASE_ENABLE;
 	dma_init_struct.memory_width 		= DMA_MEMORY_WIDTH_8BIT;
-	dma_init_struct.number 					= Size;
+	dma_init_struct.number 				= Size;
 	dma_init_struct.periph_addr 		= USART1_RDATA_ADDRESS;
 	dma_init_struct.periph_inc 			= DMA_PERIPH_INCREASE_DISABLE;
 	dma_init_struct.periph_width 		= DMA_PERIPHERAL_WIDTH_8BIT;
-	dma_init_struct.priority 				= DMA_PRIORITY_ULTRA_HIGH; 			// Priorities: *_LOW, *_MEDIUM, *_HIGH, *_ULTRA_HIGH,
+	dma_init_struct.priority 			= DMA_PRIORITY_ULTRA_HIGH; 			// Priorities: *_LOW, *_MEDIUM, *_HIGH, *_ULTRA_HIGH,
 	dma_init(DMA_CH4, dma_init_struct);
 	
 	/* configure DMA mode */
@@ -271,8 +271,8 @@ void i2c_config(void) {
 	
 	#ifdef AUX45_USE_I2C	
 		/* I2C clock configure */
-		//i2c_clock_config(AUX_I2C, AUX_I2C_SPEED, I2C_DTCY_2); 			// I2C duty cycle in fast mode
-		i2c_clock_config(AUX_I2C, AUX_I2C_SPEED, I2C_DTCY_16_9); 			// I2C duty cycle in fast mode plus
+		//i2c_clock_config(AUX_I2C, AUX_I2C_SPEED, I2C_DTCY_2); 		// I2C duty cycle in fast mode
+		i2c_clock_config(AUX_I2C, AUX_I2C_SPEED, I2C_DTCY_16_9); 		// I2C duty cycle in fast mode plus
 		/* I2C address configure */
 		i2c_mode_addr_config(AUX_I2C, I2C_I2CMODE_ENABLE, I2C_ADDFORMAT_7BITS, AUX_I2C_OWN_ADDRESS7);
 		/* enable I2C */

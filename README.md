@@ -14,6 +14,9 @@ This repository implements the firmware for the hoveboard sideboards. The hovebo
 The original sideboard hardware supports one 4-pin cable that originally was connected to the hoveboard mainboard. It breaks out GND, 12/15V and USART. Additionally, two ports are used to connect to the LED boards. On the back of the board, two Photo Interrupter Optical Switches can be found, originally used to detect if a human is standing on the hoverboard.
 ![sideboard](/docs/pictures/sideboard_pinout.png)
 
+The LED boards consist of colored LEDs (blue, red, green, orange) used for design and to inform the user about the current hoverboard state.
+![ledboard](/docs/pictures/ledboard_pinout.png)
+
 The heart of the sideboard is a [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) with the pinout shown in the follwing figure:
 ![MCU_pinout](/docs/pictures/MCU_pinout.png)
 
@@ -40,13 +43,34 @@ If you have never flashed your sideboard before, the MCU is probably locked. To 
 
 To build and flash choose one of the following methods:
 
-### Method 1: Using Keil uVision (recommended)
+### Method 1: Using PlatformIO
 
-- in [Keil uVision](https://www.keil.com/download/product/), open the [sideboard-hack.uvproj](/MDK-ARM/) 
+Because this board is not yet supported by [PlatformIO](https://platformio.org/), we have to make two extra steps. These steps can be skipped once the board is supported (see [this thread](https://community.platformio.org/t/build-gd32-project-with-platformio/11944)).
+
+- go to your PlatformIO home folder (Windows: `C:\Users\<user>\.platformio`, Unix/Max: `/home/<user>/.platformio`). Then go into `packages`. If the folder `framework-spl` exists, delete it. 
+
+- unpack the `framework-spl.zip` in the `packages` folder so that the directory structure is now:
+```
+packages/
+| - framework-spl/
+| |--  gd32/
+| |--  platformio/
+| |--  stm32/
+| |--  package.json
+```
+(This folder contains the `GD32F1x0_Firmware_Library_v3.1.0` files)
+
+- open the project folder in the IDE of choice (vscode or Atom)
+- press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
+
+### Method 2: Using Keil uVision
+
+- in [Keil uVision](https://www.keil.com/download/product/), open the [sideboard-hack.uvproj](/MDK-ARM/)
+- if you are asked to install missing package, click `Yes`
 - click Build Target (or press F7) to build the firmware
 - click Load Code (or press F8) to flash the firmware.
 
-### Method 2: Using Ubuntu
+### Method 3: Using Ubuntu
 
 - prerequisites: install [ST-Flash utility](https://github.com/texane/stlink).
 
@@ -58,8 +82,6 @@ make
 ```
 make flash
 ```
-
-*Note: If someone finds a way to build and flash the GD32 MCU via [Platformio](https://platformio.org/) let me know.*
 
 
 ---

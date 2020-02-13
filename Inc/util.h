@@ -26,33 +26,34 @@
 #include "defines.h"
 
 
-extern volatile int8_t     		i2c_status;
-extern volatile i2c_cmd				i2c_ReadWriteCmd;
-extern volatile uint8_t				i2c_slaveAddress;
-extern volatile uint8_t				i2c_regAddress;
-extern volatile uint8_t*			i2c_txbuffer;
-extern volatile uint8_t*    	i2c_rxbuffer;
-extern volatile uint8_t       i2c_nDABytes;
-extern volatile  int8_t       i2c_nRABytes;
+extern volatile int8_t    i2c_status;
+extern volatile i2c_cmd		i2c_ReadWriteCmd;
+extern volatile uint8_t		i2c_slaveAddress;
+extern volatile uint8_t		i2c_regAddress;
+extern volatile uint8_t*	i2c_txbuffer;
+extern volatile uint8_t*  i2c_rxbuffer;
+extern volatile uint8_t   i2c_nDABytes;
+extern volatile  int8_t   i2c_nRABytes;
 
 #ifdef AUX45_USE_I2C
-extern volatile int8_t     		i2c_aux_status;
-extern volatile i2c_cmd				i2c_aux_ReadWriteCmd;
-extern volatile uint8_t				i2c_aux_slaveAddress;
-extern volatile uint8_t				i2c_aux_regAddress;
-extern volatile uint8_t*			i2c_aux_txbuffer;
-extern volatile uint8_t*    	i2c_aux_rxbuffer;
-extern volatile uint8_t       i2c_aux_nDABytes;
-extern volatile  int8_t       i2c_aux_nRABytes;
+extern volatile int8_t    i2c_aux_status;
+extern volatile i2c_cmd		i2c_aux_ReadWriteCmd;
+extern volatile uint8_t		i2c_aux_slaveAddress;
+extern volatile uint8_t		i2c_aux_regAddress;
+extern volatile uint8_t*	i2c_aux_txbuffer;
+extern volatile uint8_t*  i2c_aux_rxbuffer;
+extern volatile uint8_t   i2c_aux_nDABytes;
+extern volatile  int8_t   i2c_aux_nRABytes;
 #endif
 
 /* general functions */
 void consoleLog(char *message);
-void introDemoLED(uint32_t tDelay);
+void toggle_led(uint32_t gpio_periph, uint32_t pin);
+void intro_demo_led(uint32_t tDelay);
 
 /* i2c write/read functions */
 int8_t i2c_writeBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_t *data);
-int8_t i2c_writeByte (uint8_t slaveAddr, uint8_t regAddr, uint8_t  data);
+int8_t i2c_writeByte (uint8_t slaveAddr, uint8_t regAddr, uint8_t data);
 int8_t i2c_writeBit  (uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t  data);
 int8_t i2c_readBytes (uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_t *data);
 int8_t i2c_readByte  (uint8_t slaveAddr, uint8_t regAddr, uint8_t *data);

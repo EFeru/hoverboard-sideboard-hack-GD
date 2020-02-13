@@ -88,21 +88,21 @@ void delay_decrement(void)
 /*!
     \brief      tick count increment in ms
     \param[in]  none
-		\param[out] none
+	\param[out] none
     \retval     none
 */
 void tick_count_increment()
 {
-		tick_count_ms++;
+    tick_count_ms++;
 }
 
 /*!
     \brief      get tick count in ms
     \param[in]  *count: pointer to count
-		\param[out] none
+	\param[out] none
     \retval     none
 */
 void get_tick_count_ms(unsigned long *count)
 {
-		*count = tick_count_ms;
+    *count = tick_count_ms;
 }

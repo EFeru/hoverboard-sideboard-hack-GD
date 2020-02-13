@@ -150,7 +150,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = GD32F130C6_FLASH.ld
+LDSCRIPT = GD32F130C6T_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 

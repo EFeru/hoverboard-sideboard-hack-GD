@@ -27,26 +27,26 @@
 
 
 // MAIN I2C variables
-volatile int8_t     		i2c_status;
-volatile i2c_cmd				i2c_ReadWriteCmd;
-volatile uint8_t				i2c_regAddress;
-volatile uint8_t				i2c_slaveAddress;
-volatile uint8_t*       i2c_txbuffer;
-volatile uint8_t*       i2c_rxbuffer;
-volatile uint8_t       	i2c_nDABytes;
-volatile  int8_t       	i2c_nRABytes;
-volatile uint8_t 				buffer[14];
+volatile int8_t     i2c_status;
+volatile i2c_cmd	i2c_ReadWriteCmd;
+volatile uint8_t	i2c_regAddress;
+volatile uint8_t	i2c_slaveAddress;
+volatile uint8_t*   i2c_txbuffer;
+volatile uint8_t*   i2c_rxbuffer;
+volatile uint8_t    i2c_nDABytes;
+volatile  int8_t    i2c_nRABytes;
+volatile uint8_t 	buffer[14];
 
 #ifdef AUX45_USE_I2C
 // AUX I2C variables
-volatile int8_t     		i2c_aux_status;
-volatile i2c_cmd				i2c_aux_ReadWriteCmd;
-volatile uint8_t				i2c_aux_regAddress;
-volatile uint8_t				i2c_aux_slaveAddress;
-volatile uint8_t*       i2c_aux_txbuffer;
-volatile uint8_t*       i2c_aux_rxbuffer;
-volatile uint8_t       	i2c_aux_nDABytes;
-volatile  int8_t       	i2c_aux_nRABytes;
+volatile int8_t     i2c_aux_status;
+volatile i2c_cmd	i2c_aux_ReadWriteCmd;
+volatile uint8_t	i2c_aux_regAddress;
+volatile uint8_t	i2c_aux_slaveAddress;
+volatile uint8_t*   i2c_aux_txbuffer;
+volatile uint8_t*   i2c_aux_rxbuffer;
+volatile uint8_t    i2c_aux_nDABytes;
+volatile  int8_t    i2c_aux_nRABytes;
 #endif
 
 
@@ -55,49 +55,68 @@ volatile  int8_t       	i2c_aux_nRABytes;
 void consoleLog(char *message)
 {
   #ifdef SERIAL_DEBUG
-		log_i("%s", message);
+	log_i("%s", message);
   #endif
 }
 
 
 /* retarget the C library printf function to the USART */
-int fputc(int ch, FILE *f)
+#ifdef SERIAL_DEBUG	
+	#ifdef __GNUC__
+		#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+	#else
+		#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+	#endif
+	PUTCHAR_PROTOTYPE {
+		usart_data_transmit(USART_MAIN, (uint8_t)ch);
+		while(RESET == usart_flag_get(USART_MAIN, USART_FLAG_TBE));
+		return ch;
+	}
+	
+	#ifdef __GNUC__
+		int _write(int file, char *data, int len) {
+			int i;
+			for (i = 0; i < len; i++) { __io_putchar( *data++ );}
+			return len; 
+		}
+	#endif
+#endif
+
+
+void toggle_led(uint32_t gpio_periph, uint32_t pin)
 {
-	usart_data_transmit(USART_MAIN, (uint8_t)ch);
-	while(RESET == usart_flag_get(USART_MAIN, USART_FLAG_TBE));
-	return ch;
+	GPIO_OCTL(gpio_periph) ^= pin;
 }
 
-
-void introDemoLED(uint32_t tDelay)
+void intro_demo_led(uint32_t tDelay)
 {
-		int i;
+	int i;
+
+	for (i = 0; i < 6; i++) {
+		gpio_bit_set(LED1_GPIO_Port, LED1_Pin);
+		gpio_bit_reset(LED3_GPIO_Port, LED3_Pin);			
+		delay_1ms(tDelay);
+		gpio_bit_set(LED2_GPIO_Port, LED2_Pin);
+		gpio_bit_reset(LED1_GPIO_Port, LED1_Pin);
+		delay_1ms(tDelay);
+		gpio_bit_set(LED3_GPIO_Port, LED3_Pin);
+		gpio_bit_reset(LED2_GPIO_Port, LED2_Pin);
+		delay_1ms(tDelay);
+	}
 	
-		for (i = 0; i < 6; i++) {
-			gpio_bit_set(LED1_GPIO_Port, LED1_Pin);
-			gpio_bit_reset(LED3_GPIO_Port, LED3_Pin);			
-			delay_1ms(tDelay);
-			gpio_bit_set(LED2_GPIO_Port, LED2_Pin);
-			gpio_bit_reset(LED1_GPIO_Port, LED1_Pin);
-			delay_1ms(tDelay);
-			gpio_bit_set(LED3_GPIO_Port, LED3_Pin);
-			gpio_bit_reset(LED2_GPIO_Port, LED2_Pin);
-			delay_1ms(tDelay);
-		}
-		
-		for (i = 0; i < 2; i++) {
-			gpio_bit_set(LED1_GPIO_Port, LED1_Pin);
-			gpio_bit_set(LED2_GPIO_Port, LED2_Pin);
-			gpio_bit_set(LED3_GPIO_Port, LED3_Pin);
-			gpio_bit_set(LED4_GPIO_Port, LED4_Pin);
-			gpio_bit_set(LED5_GPIO_Port, LED5_Pin);
-			delay_1ms(tDelay);
-			gpio_bit_reset(LED1_GPIO_Port, LED1_Pin);
-			gpio_bit_reset(LED2_GPIO_Port, LED2_Pin);
-			gpio_bit_reset(LED3_GPIO_Port, LED3_Pin);
-			gpio_bit_reset(LED4_GPIO_Port, LED4_Pin);
-			gpio_bit_reset(LED5_GPIO_Port, LED5_Pin);
-		}		
+	for (i = 0; i < 2; i++) {
+		gpio_bit_set(LED1_GPIO_Port, LED1_Pin);
+		gpio_bit_set(LED2_GPIO_Port, LED2_Pin);
+		gpio_bit_set(LED3_GPIO_Port, LED3_Pin);
+		gpio_bit_set(LED4_GPIO_Port, LED4_Pin);
+		gpio_bit_set(LED5_GPIO_Port, LED5_Pin);
+		delay_1ms(tDelay);
+		gpio_bit_reset(LED1_GPIO_Port, LED1_Pin);
+		gpio_bit_reset(LED2_GPIO_Port, LED2_Pin);
+		gpio_bit_reset(LED3_GPIO_Port, LED3_Pin);
+		gpio_bit_reset(LED4_GPIO_Port, LED4_Pin);
+		gpio_bit_reset(LED5_GPIO_Port, LED5_Pin);
+	}		
 		
 }
 
@@ -113,12 +132,12 @@ int8_t i2c_writeBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_
 	i2c_ReadWriteCmd 	= WRITE;			
 	
 	// assign inputs	
-	i2c_status 				= -1;
+	i2c_status 			= -1;
 	i2c_slaveAddress 	= slaveAddr << 1;		// Address is shifted one position to the left. LSB is reserved for the Read/Write bit.
 	i2c_regAddress 		= regAddr;	
-	i2c_txbuffer 			= data;
-	i2c_nDABytes 			= length;
-	i2c_nRABytes 			= 1;
+	i2c_txbuffer 		= data;
+	i2c_nDABytes 		= length;
+	i2c_nRABytes 		= 1;
 	
 	// enable the I2C0 interrupt
 	i2c_interrupt_enable(MPU_I2C, I2C_INT_ERR | I2C_INT_BUF | I2C_INT_EV);
@@ -170,12 +189,12 @@ int8_t i2c_readBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_t
 	i2c_ReadWriteCmd 	= READ;
 	
 	// assign inputs
-	i2c_status 				= -1;
+	i2c_status 			= -1;
 	i2c_slaveAddress 	= slaveAddr << 1; 	// Address is shifted one position to the left. LSB is reserved for the Read/Write bit.
 	i2c_regAddress 		= regAddr;
-	i2c_rxbuffer 			= data;
-	i2c_nDABytes 			= length;
-	i2c_nRABytes 			= 1;   
+	i2c_rxbuffer 		= data;
+	i2c_nDABytes 		= length;
+	i2c_nRABytes 		= 1;   
     
 	// enable the I2C0 interrupt
 	i2c_interrupt_enable(MPU_I2C, I2C_INT_ERR | I2C_INT_BUF | I2C_INT_EV);
@@ -231,12 +250,12 @@ int8_t i2c_aux_writeBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, ui
 	i2c_aux_ReadWriteCmd 	= WRITE;			
 	
 	// assign inputs	
-	i2c_aux_status 				= -1;
+	i2c_aux_status 			= -1;
 	i2c_aux_slaveAddress 	= slaveAddr << 1; 	// Address is shifted one position to the left. LSB is reserved for the Read/Write bit.
 	i2c_aux_regAddress 		= regAddr;	
-	i2c_aux_txbuffer 			= data;
-	i2c_aux_nDABytes 			= length;
-	i2c_aux_nRABytes 			= 1;
+	i2c_aux_txbuffer 		= data;
+	i2c_aux_nDABytes 		= length;
+	i2c_aux_nRABytes 		= 1;
 	
 	// enable the I2C0 interrupt
 	i2c_interrupt_enable(AUX_I2C, I2C_INT_ERR | I2C_INT_BUF | I2C_INT_EV);
@@ -264,12 +283,12 @@ int8_t i2c_aux_readBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uin
 	i2c_aux_ReadWriteCmd 	= READ;
 	
 	// assign inputs
-	i2c_aux_status 				= -1;
+	i2c_aux_status 			= -1;
 	i2c_aux_slaveAddress 	= slaveAddr << 1;			// Address is shifted one position to the left. LSB is reserved for the Read/Write bit.
 	i2c_aux_regAddress 		= regAddr;
-	i2c_aux_rxbuffer 			= data;
-	i2c_aux_nDABytes 			= length;
-	i2c_aux_nRABytes 			= 1;   
+	i2c_aux_rxbuffer 		= data;
+	i2c_aux_nDABytes 		= length;
+	i2c_aux_nRABytes 		= 1;   
     
 	// enable the I2C0 interrupt
 	i2c_interrupt_enable(AUX_I2C, I2C_INT_ERR | I2C_INT_BUF | I2C_INT_EV);

@@ -33,6 +33,7 @@
 #define MPU_ACCEL_FSR							2						// [g] Set Acceleromenter Full Scale Range: 2g, 4g, 8g, 16g. !! DMP sensor fusion works only with 2g !!
 #define MPU_I2C_SPEED							400000			// [bit/s] Define I2C speed for communicating with the MPU6050
 #define DELAY_IN_MAIN_LOOP 				1						// [ms] Delay in the main loop
+// #define PRINTF_FLOAT_SUPPORT               // [-] Uncomment this for printf to support float on Serial Debug. It will increase code size! Better to avoid it!
 /* =============================================================================================== */
 
 
