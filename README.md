@@ -45,7 +45,7 @@ To build and flash choose one of the following methods:
 
 ### Method 1: Using PlatformIO
 
-Because this board is not yet supported by [PlatformIO](https://platformio.org/), we have to make two extra steps. These steps can be skipped once the board is supported (see [this thread](https://community.platformio.org/t/build-gd32-project-with-platformio/11944)).
+Because the [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) is not yet supported by [PlatformIO](https://platformio.org/), we have to make two extra steps. These steps can be skipped once the board is supported (see [this thread](https://community.platformio.org/t/build-gd32-project-with-platformio/11944)).
 
 - go to your PlatformIO home folder (Windows: `C:\Users\<user>\.platformio`, Unix/Max: `/home/<user>/.platformio`). Then go into `packages`. If the folder `framework-spl` exists, delete it. 
 
@@ -87,8 +87,8 @@ make flash
 ---
 ## Example Variants 
 
-This firmware offers currently these variants (selectable in [config.h](/Inc/config.h)):
-- **VARIANT_DEBUG**: In this variant the user can interact with sideboard via a Serial Monitor to observe and check the capabilities of the sideboard.
+This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
+- **VARIANT_DEBUG**: In this variant the user can interact with sideboard by sending commands via a Serial Monitor to observe and check the capabilities of the sideboard.
 - **VARIANT_HOVERBOARD**: In this variant the sideboard is communicating with the mainboard of a hoverboard using the [FOC firmware repository](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC). This Variant is not yet fully tested!
 
 Of course the firmware can be further customized for other needs or projects.
