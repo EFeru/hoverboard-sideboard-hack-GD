@@ -45,6 +45,11 @@
  */
 
 
+static signed char MPU_ORIENTATION[9] = {1, 0, 0,    // [-] MPU Sensor orientation matrix: set this according to the sensor installation
+                                         0, 1, 0,
+                                         0, 0, 1};
+
+
 #if !defined MPU6050 && !defined MPU9150 && !defined MPU6500 && !defined MPU9250
 #error  Which gyro are you using? Define MPUxxxx in config.h
 #endif
@@ -3274,13 +3279,9 @@ void mpu_start_self_test(void)
 
 }
 
-/**
- *  @}
- */
+
 
 //=========================================================================================
-//=========================================================================================
-
 struct hal_s {
     unsigned char lp_accel_mode;
     unsigned char sensors;
@@ -3333,7 +3334,44 @@ void mpu_setup_gyro(void)
     }
 }
 
+unsigned short inv_row_2_scale(const signed char *row)
+{
+    unsigned short b;
 
+    if (row[0] > 0)
+        b = 0;
+    else if (row[0] < 0)
+        b = 4;
+    else if (row[1] > 0)
+        b = 1;
+    else if (row[1] < 0)
+        b = 5;
+    else if (row[2] > 0)
+        b = 2;
+    else if (row[2] < 0)
+        b = 6;
+    else
+        b = 7;      // error
+    return b;
+}
+
+/*
+ *  This function converts the Sensor orientation matric to a scalar
+ */
+unsigned short inv_orientation_matrix_to_scalar(const signed char *mtx)
+{
+    unsigned short scalar;
+    scalar  = inv_row_2_scale(mtx);
+    scalar |= inv_row_2_scale(mtx + 3) << 3;
+    scalar |= inv_row_2_scale(mtx + 6) << 6;
+
+    return scalar;
+}
+
+
+/**
+ *  @}
+ */
 
 /* =========================== MPU-6050 Configuration =========================== */
 int mpu_config(void)
@@ -3401,7 +3439,7 @@ int mpu_config(void)
             consoleLog(" FAIL (DMP) --\r\n");	
             return -1;
         }
-    // dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_pdata.orientation));
+    dmp_set_orientation(inv_orientation_matrix_to_scalar(MPU_ORIENTATION));
     dmp_register_tap_cb(mpu_tap_func);
     dmp_register_android_orient_cb(mpu_android_orient_func);
     /*

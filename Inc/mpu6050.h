@@ -122,6 +122,8 @@ int mpu_run_self_test(long *gyro, long *accel);
 int mpu_run_6500_self_test(long *gyro, long *accel, unsigned char debug);
 void mpu_start_self_test(void);
 void mpu_setup_gyro(void);
+unsigned short inv_row_2_scale(const signed char *row);
+unsigned short inv_orientation_matrix_to_scalar(const signed char *mtx);
 
 /* MPU configuration */
 int mpu_config(void);
