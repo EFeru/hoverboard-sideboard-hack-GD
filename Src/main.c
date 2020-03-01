@@ -151,7 +151,8 @@ int main(void)
 			consoleLog("-- SENSOR 1 Active --\n");		
 		} else if(sensor1 == SET && sensor1_read == RESET) {
 			sensor1 = RESET;
-			gpio_bit_reset(LED4_GPIO_Port, LED4_Pin);			
+			gpio_bit_reset(LED4_GPIO_Port, LED4_Pin);
+			consoleLog("-- SENSOR 1 Deactive --\n");	
 		}
 		
 		// SENSOR2
@@ -159,9 +160,11 @@ int main(void)
 			sensor2 = SET;
 			// Sensor ACTIVE: Do something here (one time task on activation)
 			gpio_bit_set(LED5_GPIO_Port, LED5_Pin);
+			consoleLog("-- SENSOR 2 Active --\n");
 		} else if (sensor2 == SET && sensor2_read == RESET) {
 			sensor2 = RESET;
 			gpio_bit_reset(LED5_GPIO_Port, LED5_Pin);
+			consoleLog("-- SENSOR 2 Deactive --\n");
 		}
 
 		if (sensor1 == SET) {
