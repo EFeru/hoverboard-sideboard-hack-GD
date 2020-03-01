@@ -1,5 +1,5 @@
 /*
-    hoverboard-sidebboard-hack MPU6050 IMU - 3D Visualization Example
+    hoverboard-sidebboard-hack MPU6050 IMU - 3D Visualization Example. Use with VARIANT_DEBUG.
     Copyright (C) 2020-2021 Emanuel FERU
 */
 import processing.serial.*;
@@ -9,40 +9,32 @@ import java.io.IOException;
 Serial myPort;
 float roll, pitch,yaw;
 int idx = 0;
-int inBytePrev;
-short bufWord;  
+
+String data="";
+String check="";
 
 void setup() {
   size (1400, 800, P3D);    
   printArray(Serial.list());                 // List all the available serial ports    
   myPort = new Serial(this, "COM5", 38400);   // starts the serial communication
-
+  myPort.bufferUntil('\n');
 }
 
 void draw() {
-
-  while (myPort.available() > 0) {      
-    int inByte = myPort.read();
-    bufWord = (short)(inBytePrev | (inByte << 8));
-    idx++;      
-    if(bufWord == -21846) {     // check START_FRAME = 0xAAAA
-      idx = 0;         
+ 
+  // If no data is received, send 'e' command to read the Euler angles
+  if(idx != -1 && myPort.available() == 0) {    
+    idx++;
+    if(idx > 20) {
+      myPort.write('e');
+      idx = -1;
     }
-    if (idx == 2) {
-       roll   = float(bufWord) / 100;
-    }
-    if (idx == 4) {
-       pitch  = float(bufWord) / 100;
-    }
-    if (idx == 6) {
-       yaw   = float(bufWord) / 100;
-    }      
-    inBytePrev = inByte;      
+  } else {
+    idx = -1;
   }
-    
-  // println(bufWord); //<>//
-
-  translate(width/2, height/2, 0);
+  
+  // Display text
+  translate(width/2, height/2, 0); //<>//
   background(51);
   textSize(22);
   text("Roll: " + roll + "     Pitch: " + pitch + "     Yaw: " + yaw, -200, 300);
@@ -52,8 +44,7 @@ void draw() {
   rotateZ(radians(-pitch));
   rotateY(radians(yaw));
   
-  // 3D 0bject
-  
+  // 3D 0bject  
   // Draw box with text
   fill(35, 133, 54);     // Make board GREEN
   box (426, 30, 220);
@@ -79,4 +70,22 @@ void draw() {
   translate(-60, 0, 0);
   box (40, 40, 15);     // Blue Led connector
 
+}
+
+// Read data from the Serial Port
+void serialEvent (Serial myPort) { 
+  // reads the data from the Serial Port up to the character '\n' and puts it into the String variable "data".
+  data = myPort.readStringUntil('\n');
+  // if you got any bytes other than the linefeed:
+  if (data != null) {
+    data = trim(data);
+    // split the string at " " (character space)
+    String items[] = split(data, ' ');
+    if (items.length > 5) {
+      //--- Roll,Pitch in degrees
+      roll  = float(items[2]) / 100;
+      pitch = float(items[4]) / 100;
+      yaw   = float(items[6]) / 100;
+    }
+  }
 }

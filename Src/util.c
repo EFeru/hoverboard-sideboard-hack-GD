@@ -92,7 +92,7 @@ void intro_demo_led(uint32_t tDelay)
 {
 	int i;
 
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 3; i++) {
 		gpio_bit_set(LED1_GPIO_Port, LED1_Pin);
 		gpio_bit_reset(LED3_GPIO_Port, LED3_Pin);			
 		delay_1ms(tDelay);

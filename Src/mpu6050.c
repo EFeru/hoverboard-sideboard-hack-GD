@@ -3231,19 +3231,19 @@ void mpu_start_self_test(void)
 #elif defined (MPU6050) || defined (MPU9150)
     result = mpu_run_self_test(gyro, accel);
 #endif
+    #ifdef SERIAL_DEBUG
+        log_i("accel: %ld %ld %ld\n",
+                                accel[0],
+                                accel[1],
+                                accel[2]);
+        log_i("gyro: %ld %ld %ld\n",
+                                gyro[0],
+                                gyro[1],
+                                gyro[2]);
+    #endif
     if (result == 0x7) {
-        #ifdef SERIAL_DEBUG
-            consoleLog("Passed!\n");
-            log_i("accel: %ld %ld %ld\n",
-                                    accel[0],
-                                    accel[1],
-                                    accel[2]);
-            log_i("gyro: %ld %ld %ld\n",
-                                    gyro[0],
-                                    gyro[1],
-                                    gyro[2]);
-            /* Test passed. We can trust the gyro data here, so now we need to update calibrated data*/
-        #endif
+        consoleLog("Passed!\n");
+        /* Test passed. We can trust the gyro data here, so now we need to update calibrated data*/
 
 #ifdef USE_CAL_HW_REGISTERS
         /*
@@ -3640,10 +3640,10 @@ void mpu_calc_euler_angles(void) {
 	float yaw, pitch, roll;
 	
 	// Convert quaternions[q30] to quaternion[float]
-	w = (float)mpu.quat.w / 1073741824; 		// 1073741824 = 2^30
-	x = (float)mpu.quat.x / 1073741824;
-	y = (float)mpu.quat.y / 1073741824;
-	z = (float)mpu.quat.z / 1073741824;
+	w = (float)mpu.quat.w / q30; 		// q30 = 2^30
+	x = (float)mpu.quat.x / q30;
+	y = (float)mpu.quat.y / q30;
+	z = (float)mpu.quat.z / q30;
 	
 	// Calculate Euler angles: source <https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles>	
 	roll 	= atan2(2*(w*x + y*z), 1 - 2*(x*x + y*y));		// roll  (x-axis rotation)

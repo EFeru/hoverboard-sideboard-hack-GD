@@ -346,7 +346,7 @@ void I2C1_ErrorIRQ_Handler(void)
         i2c_interrupt_flag_clear(I2C1, I2C_INT_FLAG_PECERR);
     }
     /* disable the error interrupt */
-    i2c_interrupt_disable(I2C0,I2C_INT_ERR | I2C_INT_BUF | I2C_INT_EV);
+    i2c_interrupt_disable(I2C1,I2C_INT_ERR | I2C_INT_BUF | I2C_INT_EV);
 }
 #endif
 

@@ -46,8 +46,6 @@ typedef struct{
 	uint16_t 	start;
 	int16_t 	cmd1;
 	int16_t 	cmd2;
-	int16_t 	speedR;
-	int16_t 	speedL;
 	int16_t 	speedR_meas;
 	int16_t 	speedL_meas;
 	int16_t 	batVoltage;
@@ -63,7 +61,7 @@ static uint8_t timeoutFlagSerial  = 0;  				// Timeout Flag for Rx Serial comman
 #endif
 
 extern MPU_Data 	mpu;								// holds the MPU-6050 data
-ErrStatus 			mpuStatus = SUCCESS;				// holds the MPU-6050 status: SUCCESS or ERROR
+ErrStatus 			mpuStatus;							// holds the MPU-6050 status: SUCCESS or ERROR
 
 uint8_t 			userCommand;						// holds the user command input
 FlagStatus 			sensor1, sensor2; 					// holds the sensor1 and sensor 2 values
@@ -81,10 +79,10 @@ int main(void)
 	i2c_nvic_config();									// NVIC peripheral config	
 	
 	#ifdef SERIAL_CONTROL
-		usart_Tx_DMA_config(USART_MAIN, (uint8_t *)&Sideboard, 		sizeof(Sideboard));
+		usart_Tx_DMA_config(USART_MAIN, (uint8_t *)&Sideboard, sizeof(Sideboard));
 	#endif
 	#ifdef SERIAL_FEEDBACK
-		usart_Rx_DMA_config(USART_MAIN, (uint8_t *)&NewFeedback,  sizeof(NewFeedback));
+		usart_Rx_DMA_config(USART_MAIN, (uint8_t *)&NewFeedback, sizeof(NewFeedback));
 	#endif
 	
 	intro_demo_led(100);								// Short LEDs intro demo with 100 ms delay. This also gives some time for the MPU-6050 to power-up.	
@@ -93,6 +91,7 @@ int main(void)
 		gpio_bit_set(LED1_GPIO_Port, LED1_Pin);			// Turn on RED LED
 	}
 	else {
+		mpuStatus = SUCCESS;
 		gpio_bit_set(LED2_GPIO_Port, LED2_Pin);			// Turn on GREEN LED
 	}
 	mpu_handle_input('h'); 								// Print the User Help commands to serial
@@ -131,11 +130,13 @@ int main(void)
 		// Get MPU data. Because the MPU-6050 interrupt pin is not wired we have to check DMP data by pooling periodically
 		if (SUCCESS == mpuStatus) {
 			mpu_get_data();
+		} else if (ERROR == mpuStatus && main_loop_counter % 100 == 0) {
+			toggle_led(LED1_GPIO_Port, LED1_Pin);					// Toggle the Red LED every 100 ms
 		}
 		// Print MPU data to Console
 		if (main_loop_counter % 50 == 0) {
 			mpu_print_to_console();
-		}	
+		}
 		
 
 		// ==================================== SENSORS Handling ====================================
@@ -174,13 +175,12 @@ int main(void)
 		// ==================================== SERIAL Tx/Rx Handling ====================================
 		#ifdef SERIAL_CONTROL
 			// To transmit on USART
-			if (main_loop_counter % 50 == 0 && SET == dma_flag_get(DMA_CH3, DMA_FLAG_FTF)) {		//  check if DMA channel transfer complete (Full Transfer Finish flag == 1)
-				
+			if (main_loop_counter % 5 == 0 && SET == dma_flag_get(DMA_CH3, DMA_FLAG_FTF)) {		//  check if DMA channel transfer complete (Full Transfer Finish flag == 1)				
 				Sideboard.start    	= (uint16_t)SERIAL_START_FRAME;
 				Sideboard.roll    	= (int16_t)mpu.euler.roll;
 				Sideboard.pitch    	= (int16_t)mpu.euler.pitch;
 				Sideboard.yaw    	= (int16_t)mpu.euler.yaw;
-				Sideboard.sensors	= (uint16_t)(sensor1 | (sensor2 << 1));
+				Sideboard.sensors	= (uint16_t)(sensor1 | (sensor2 << 1) | (mpuStatus << 2));
 				Sideboard.checksum 	= (uint16_t)(Sideboard.start ^ Sideboard.roll ^ Sideboard.pitch ^ Sideboard.yaw ^ Sideboard.sensors);
 			
 				dma_channel_disable(DMA_CH3);
@@ -192,36 +192,33 @@ int main(void)
 		
 		#ifdef SERIAL_FEEDBACK
 			uint16_t checksum;
-			checksum = (uint16_t)(NewFeedback.start ^ NewFeedback.cmd1 ^ NewFeedback.cmd2 ^ NewFeedback.speedR ^ NewFeedback.speedL
-								^ NewFeedback.speedR_meas ^ NewFeedback.speedL_meas ^ NewFeedback.batVoltage ^ NewFeedback.boardTemp ^ NewFeedback.cmdLed);
+			checksum = (uint16_t)(NewFeedback.start ^ NewFeedback.cmd1 ^ NewFeedback.cmd2 ^ NewFeedback.speedR_meas ^ NewFeedback.speedL_meas
+								^ NewFeedback.batVoltage ^ NewFeedback.boardTemp ^ NewFeedback.cmdLed);
 			if (NewFeedback.start == SERIAL_START_FRAME && NewFeedback.checksum == checksum) {
-			if (timeoutFlagSerial) {                    	// Check for previous timeout flag  
-			if (timeoutCntSerial-- <= 0)              		// Timeout de-qualification
-				timeoutFlagSerial = 0;                  	// Timeout flag cleared           
-			} else {
-				memcpy(&Feedback, &NewFeedback, sizeof(SerialFeedback));	// Copy the new data 
-				NewFeedback.start = 0xFFFF;             	// Change the Start Frame for timeout detection in the next cycle
-				timeoutCntSerial  = 0;                  	// Reset the timeout counter         
-          	}
+				if (timeoutFlagSerial) {                	// Check for previous timeout flag  
+					if (timeoutCntSerial-- <= 0)            // Timeout de-qualification
+						timeoutFlagSerial = 0;              // Timeout flag cleared           
+				} else {
+					memcpy(&Feedback, &NewFeedback, sizeof(Feedback));	// Copy the new data 
+					NewFeedback.start = 0xFFFF;             // Change the Start Frame for timeout detection in the next cycle
+					timeoutCntSerial  = 0;                  // Reset the timeout counter         
+				}
 			} else {
 				if (timeoutCntSerial++ >= SERIAL_TIMEOUT) { // Timeout qualification
 				timeoutFlagSerial = 1;                      // Timeout detected
 				timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
 				}
-				// Check periodically the received Start Frame. If it is NOT OK, most probably we are out-of-sync. Try to re-sync by reseting the DMA
-				if (main_loop_counter % 50 == 0 && NewFeedback.start != SERIAL_START_FRAME && NewFeedback.start != 0xFFFF) {
+				// Most probably we are out-of-sync. Try to re-sync by reseting the DMA
+				if (main_loop_counter % 150 == 0) {
 					dma_channel_disable(DMA_CH4);            
-					usart_Rx_DMA_config(USART_MAIN, (uint8_t *)&NewFeedback,  sizeof(NewFeedback));
+					usart_Rx_DMA_config(USART_MAIN, (uint8_t *)&NewFeedback,  sizeof(NewFeedback));					
 				}
 			}
-						
-			if (timeoutFlagSerial) {                   		// In case of timeout bring the system to a Safe State and indicate error if desired
-				gpio_bit_set(LED1_GPIO_Port, LED1_Pin);		// Turn on Red LED
-			} else {
-				gpio_bit_reset(LED1_GPIO_Port, LED1_Pin);   // Follow the Normal behavior
-			}		
-		#endif	
-		
+							
+			if (timeoutFlagSerial && main_loop_counter % 100 == 0) {  	// In case of timeout bring the system to a Safe State and indicate error if desired
+				toggle_led(LED3_GPIO_Port, LED3_Pin);					// Toggle the Yellow LED every 100 ms
+			}	
+		#endif		
 		
 		main_loop_counter++;
 		

@@ -1,7 +1,7 @@
 .pio/
 .pioenvs/
 .vscode/
-MDK-ARM/Listing/
+MDK-ARM/Listings/
 MDK-ARM/Objects/
 MDK-ARM/*.uvgui.*
 !build/VARIANT_DEBUG/firmware.hex

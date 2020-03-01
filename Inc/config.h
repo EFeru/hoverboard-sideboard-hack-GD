@@ -67,8 +67,8 @@
 	#define SERIAL_FEEDBACK											// [-] Define for Serial Feedback via the serial port
 #endif
 #define USART_MAIN_BAUD						38400				// [bit/s] MAIN Serial Tx/Rx baud rate
-#define SERIAL_START_FRAME   			0xAAAA     	// [-] Start frame definition for reliable serial communication
-#define SERIAL_TIMEOUT          	300         // [-] Numer of wrong received data for Serial timeout detection
+#define SERIAL_START_FRAME   			0xABCD     	// [-] Start frame definition for reliable serial communication
+#define SERIAL_TIMEOUT          	500         // [-] Numer of wrong received data for Serial timeout detection
 
 
 /* ==================================== SETTINGS AUX ==================================== */
