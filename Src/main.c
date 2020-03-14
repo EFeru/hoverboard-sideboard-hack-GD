@@ -109,6 +109,7 @@ int main(void)
 				if (Feedback.cmdLed & LED3_SET) { gpio_bit_set(LED3_GPIO_Port, LED3_Pin); } else { gpio_bit_reset(LED3_GPIO_Port, LED3_Pin); }
 				if (Feedback.cmdLed & LED4_SET) { gpio_bit_set(LED4_GPIO_Port, LED4_Pin); } else { gpio_bit_reset(LED4_GPIO_Port, LED4_Pin); }
 				if (Feedback.cmdLed & LED5_SET) { gpio_bit_set(LED5_GPIO_Port, LED5_Pin); } else { gpio_bit_reset(LED5_GPIO_Port, LED5_Pin); }
+				if (Feedback.cmdLed & LED4_SET) { gpio_bit_set(AUX3_GPIO_Port, AUX3_Pin); } else { gpio_bit_reset(AUX3_GPIO_Port, AUX3_Pin); }
 			}
 		#endif
 	
