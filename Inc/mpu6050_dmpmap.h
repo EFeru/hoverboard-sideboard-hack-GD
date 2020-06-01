@@ -5,6 +5,7 @@
  */
 #ifndef DMPMAP_H
 #define DMPMAP_H
+#ifdef  MPU_SENSOR_ENABLE
 
 #ifdef __cplusplus
 extern "C"
@@ -261,4 +262,6 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
+#endif // MPU_SENSOR_ENABLE
 #endif // DMPMAP_H

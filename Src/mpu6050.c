@@ -44,8 +44,11 @@
  * min(int a, int b)
  */
 
+MPU_Data mpu;                                       // holds the MPU-6050 data
 
-static signed char MPU_ORIENTATION[9] = {1, 0, 0,    // [-] MPU Sensor orientation matrix: set this according to the sensor installation
+#ifdef  MPU_SENSOR_ENABLE
+
+static signed char MPU_ORIENTATION[9] = {1, 0, 0,   // [-] MPU Sensor orientation matrix: set this according to the sensor installation
                                          0, 1, 0,
                                          0, 0, 1};
 
@@ -3470,8 +3473,6 @@ int mpu_config(void)
 
 /* =========================== MPU-6050 Get Packet Data =========================== */
 
-MPU_Data mpu;
-
 void mpu_get_data(void)
 {
 	
@@ -3953,5 +3954,5 @@ void mpu_print_to_console(void)
 	#endif	
 }
 
-
+#endif // MPU_SENSOR_ENABLE
 

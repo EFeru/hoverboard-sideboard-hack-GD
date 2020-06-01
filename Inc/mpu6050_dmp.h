@@ -23,6 +23,7 @@
 // Define to prevent recursive inclusion
 #ifndef MPU6050_DMP_H
 #define MPU6050_DMP_H
+#ifdef  MPU_SENSOR_ENABLE
 
 #include <stdint.h>
 
@@ -102,6 +103,6 @@ int dmp_enable_gyro_cal(unsigned char enable);
 int dmp_read_fifo(short *gyro, short *accel, long *quat,
     unsigned long *timestamp, short *sensors, unsigned char *more);
 
-
-#endif
+#endif // MPU_SENSOR_ENABLE
+#endif // MPU6050_DMP_H
 

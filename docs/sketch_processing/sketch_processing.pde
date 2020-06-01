@@ -40,8 +40,8 @@ void draw() {
   text("Roll: " + roll + "     Pitch: " + pitch + "     Yaw: " + yaw, -200, 300);
   
   // Rotate the object
-  rotateX(radians(roll));
-  rotateZ(radians(-pitch));
+  rotateZ(radians(roll));
+  rotateX(radians(pitch));
   rotateY(radians(yaw));
   
   // 3D 0bject  

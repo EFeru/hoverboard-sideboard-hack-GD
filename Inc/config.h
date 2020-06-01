@@ -42,6 +42,7 @@
 
 
 /* ==================================== SETTINGS MPU-6050 ==================================== */
+#define MPU_SENSOR_ENABLE                     // [-] Enable flag for MPU-6050 sensor. Comment-out this flag to Disable the MPU sensor and reduce code size.
 #define MPU_DMP_ENABLE												// [-] Enable flag for MPU-6050 DMP (Digital Motion Processing) functionality.
 #define MPU_DEFAULT_HZ  					20 					// [Hz] Default MPU frequecy: must be between 1Hz and 200Hz.
 #define TEMP_READ_MS    					500					// [ms] Temperature read time interval
@@ -68,7 +69,7 @@
 #endif
 #define USART_MAIN_BAUD						38400				// [bit/s] MAIN Serial Tx/Rx baud rate
 #define SERIAL_START_FRAME   			0xABCD     	// [-] Start frame definition for reliable serial communication
-#define SERIAL_TIMEOUT          	500         // [-] Numer of wrong received data for Serial timeout detection
+#define SERIAL_TIMEOUT          	800         // [-] Numer of wrong received data for Serial timeout detection
 
 
 /* ==================================== SETTINGS AUX ==================================== */

@@ -23,11 +23,13 @@
 #include <stdio.h>
 #include <string.h>
 #include "systick.h"
+#include "config.h"
 #include "mpu6050.h"
 #include "mpu6050_dmp.h"
 #include "mpu6050_dmpKey.h"
 #include "mpu6050_dmpmap.h"
 
+#ifdef  MPU_SENSOR_ENABLE
 
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
@@ -1328,6 +1330,8 @@ int dmp_register_android_orient_cb(void (*func)(unsigned char))
     dmp.android_orient_cb = func;
     return 0;
 }
+
+#endif // MPU_SENSOR_ENABLE
 
 /**
  *  @}

@@ -43,7 +43,7 @@ If you have never flashed your sideboard before, the MCU is probably locked. To 
 
 To build and flash choose one of the following methods:
 
-### Method 1: Using PlatformIO
+### Method 1: Using Platformio IDE
 
 Because the [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) is not yet supported by [PlatformIO](https://platformio.org/), we have to make two extra steps. These steps can be skipped once the board is supported (see [this thread](https://community.platformio.org/t/build-gd32-project-with-platformio/11944)).
 
@@ -70,13 +70,16 @@ packages/
 - click Build Target (or press F7) to build the firmware
 - click Load Code (or press F8) to flash the firmware.
 
-### Method 3: Using Ubuntu
+### Method 3: Using Linux CLI
 
 - prerequisites: install [ST-Flash utility](https://github.com/texane/stlink).
-
-- open a terminal in the repo check-out folder and type:
+- open a terminal in the repo check-out folder and if you have definded the variant in [config.h](/Inc/config.h) type:
 ```
 make
+```
+or you can set the variant like this
+```
+make -e VARIANT=VARIANT_####
 ```
 - flash the firmware by typing:
 ```

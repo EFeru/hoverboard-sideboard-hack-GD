@@ -86,6 +86,8 @@ int main(void)
 	#endif
 	
 	intro_demo_led(100);								// Short LEDs intro demo with 100 ms delay. This also gives some time for the MPU-6050 to power-up.	
+	
+	#ifdef MPU_SENSOR_ENABLE
 	if(mpu_config()) { 									// IMU MPU-6050 config
 		mpuStatus = ERROR;
 		gpio_bit_set(LED1_GPIO_Port, LED1_Pin);			// Turn on RED LED
@@ -95,6 +97,9 @@ int main(void)
 		gpio_bit_set(LED2_GPIO_Port, LED2_Pin);			// Turn on GREEN LED
 	}
 	mpu_handle_input('h'); 								// Print the User Help commands to serial
+	#else
+		gpio_bit_set(LED2_GPIO_Port, LED2_Pin);			// Turn on GREEN LED
+	#endif
 
 	while(1) {
 		
@@ -115,7 +120,7 @@ int main(void)
 	
 
 		// ==================================== USER Handling ====================================
-		#ifdef SERIAL_DEBUG
+		#if defined(MPU_SENSOR_ENABLE) && defined(SERIAL_DEBUG)
 		// Get the user Input as one character from Serial
 			if(SET == usart_flag_get(USART_MAIN, USART_FLAG_RBNE)) { 	//  Check if Read Buffer Not Empty meanind Serial data is available
 					userCommand = usart_data_receive(USART_MAIN);
@@ -128,6 +133,7 @@ int main(void)
 			
 		
 		// ==================================== MPU-6050 Handling ====================================
+		#ifdef MPU_SENSOR_ENABLE
 		// Get MPU data. Because the MPU-6050 interrupt pin is not wired we have to check DMP data by pooling periodically
 		if (SUCCESS == mpuStatus) {
 			mpu_get_data();
@@ -138,7 +144,7 @@ int main(void)
 		if (main_loop_counter % 50 == 0) {
 			mpu_print_to_console();
 		}
-		
+		#endif
 
 		// ==================================== SENSORS Handling ====================================
 		sensor1_read = gpio_input_bit_get(SENSOR1_GPIO_Port, SENSOR1_Pin);
@@ -174,7 +180,6 @@ int main(void)
 		if (sensor2 == SET) {
 			// Sensor ACTIVE: Do something here (continuous task)
 		}
-		
 		
 		// ==================================== SERIAL Tx/Rx Handling ====================================
 		#ifdef SERIAL_CONTROL
@@ -213,7 +218,7 @@ int main(void)
 				timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
 				}
 				// Most probably we are out-of-sync. Try to re-sync by reseting the DMA
-				if (main_loop_counter % 150 == 0) {
+				if (NewFeedback.start != SERIAL_START_FRAME && NewFeedback.start != 0xFFFF && main_loop_counter % 5 == 0) { 
 					dma_channel_disable(DMA_CH4);            
 					usart_Rx_DMA_config(USART_MAIN, (uint8_t *)&NewFeedback,  sizeof(NewFeedback));					
 				}
