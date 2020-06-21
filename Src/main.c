@@ -30,76 +30,33 @@
 #include "mpu6050_dmp.h"
 
 #ifdef SERIAL_CONTROL
-typedef struct{
-	uint16_t	start;
-	int16_t  	roll;
-	int16_t  	pitch;
-	int16_t  	yaw;
-	uint16_t  	sensors;
-	uint16_t 	checksum;
-} SerialSideboard;
-SerialSideboard Sideboard;
+extern SerialSideboard Sideboard;
 #endif
 
 #ifdef SERIAL_FEEDBACK
-typedef struct{
-	uint16_t 	start;
-	int16_t 	cmd1;
-	int16_t 	cmd2;
-	int16_t 	speedR_meas;
-	int16_t 	speedL_meas;
-	int16_t 	batVoltage;
-	int16_t 	boardTemp;
-	uint16_t 	cmdLed;
-	uint16_t  	checksum;
-} SerialFeedback;
-SerialFeedback Feedback;
-SerialFeedback NewFeedback;
-
-static int16_t timeoutCntSerial   = 0;  				// Timeout counter for Rx Serial command
-static uint8_t timeoutFlagSerial  = 0;  				// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+extern SerialFeedback Feedback;
+extern uint16_t timeoutCntSerial; 						// Timeout counter for Rx Serial command
+extern uint8_t timeoutFlagSerial; 						// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 #endif
 
-extern MPU_Data 	mpu;								// holds the MPU-6050 data
-ErrStatus 			mpuStatus;							// holds the MPU-6050 status: SUCCESS or ERROR
+extern MPU_Data 	mpu; 								// holds the MPU-6050 data
+extern ErrStatus 	mpuStatus; 							// holds the MPU-6050 status: SUCCESS or ERROR
 
-uint8_t 			userCommand;						// holds the user command input
-FlagStatus 			sensor1, sensor2; 					// holds the sensor1 and sensor 2 values
-FlagStatus			sensor1_read, sensor2_read;			// holds the instantaneous Read for sensor1 and sensor 2
+FlagStatus			sensor1, sensor2; 					// holds the sensor1 and sensor 2 values
+FlagStatus			sensor1_read, sensor2_read; 		// holds the instantaneous Read for sensor1 and sensor 2
 
-static uint32_t 	main_loop_counter;					// main loop counter to perform task squeduling inside main()
+static uint32_t 	main_loop_counter; 					// main loop counter to perform task squeduling inside main()
 
 
 int main(void)
 {		
 	systick_config(); 									// SysTick config    
-	gpio_config();										// GPIO config		
-	usart_config(USART_MAIN, USART_MAIN_BAUD); 			// USART config
+	gpio_config();										// GPIO config
+	usart_nvic_config();								// USART interrupt configuration
+	usart_config(USART_MAIN, USART_MAIN_BAUD); 			// USART config	
 	i2c_config(); 										// I2C config			
-	i2c_nvic_config();									// NVIC peripheral config	
-	
-	#ifdef SERIAL_CONTROL
-		usart_Tx_DMA_config(USART_MAIN, (uint8_t *)&Sideboard, sizeof(Sideboard));
-	#endif
-	#ifdef SERIAL_FEEDBACK
-		usart_Rx_DMA_config(USART_MAIN, (uint8_t *)&NewFeedback, sizeof(NewFeedback));
-	#endif
-	
-	intro_demo_led(100);								// Short LEDs intro demo with 100 ms delay. This also gives some time for the MPU-6050 to power-up.	
-	
-	#ifdef MPU_SENSOR_ENABLE
-	if(mpu_config()) { 									// IMU MPU-6050 config
-		mpuStatus = ERROR;
-		gpio_bit_set(LED1_GPIO_Port, LED1_Pin);			// Turn on RED LED
-	}
-	else {
-		mpuStatus = SUCCESS;
-		gpio_bit_set(LED2_GPIO_Port, LED2_Pin);			// Turn on GREEN LED
-	}
-	mpu_handle_input('h'); 								// Print the User Help commands to serial
-	#else
-		gpio_bit_set(LED2_GPIO_Port, LED2_Pin);			// Turn on GREEN LED
-	#endif
+	i2c_nvic_config();									// I2C interrupt configuration
+	input_init(); 										// Input initialization
 
 	while(1) {
 		
@@ -116,22 +73,9 @@ int main(void)
 				if (Feedback.cmdLed & LED5_SET) { gpio_bit_set(LED5_GPIO_Port, LED5_Pin); } else { gpio_bit_reset(LED5_GPIO_Port, LED5_Pin); }
 				if (Feedback.cmdLed & LED4_SET) { gpio_bit_set(AUX3_GPIO_Port, AUX3_Pin); } else { gpio_bit_reset(AUX3_GPIO_Port, AUX3_Pin); }
 			}
-		#endif
-	
-
-		// ==================================== USER Handling ====================================
-		#if defined(MPU_SENSOR_ENABLE) && defined(SERIAL_DEBUG)
-		// Get the user Input as one character from Serial
-			if(SET == usart_flag_get(USART_MAIN, USART_FLAG_RBNE)) { 	//  Check if Read Buffer Not Empty meanind Serial data is available
-					userCommand = usart_data_receive(USART_MAIN);
-					if (userCommand != 10 && userCommand != 13) { 		// Do not accept 'new line' (ascii 10) and 'carriage return' (ascii 13) commands
-							log_i("Command = %c\n", userCommand);						
-							mpu_handle_input(userCommand);
-					}
-			}
-		#endif
-			
+		#endif	
 		
+
 		// ==================================== MPU-6050 Handling ====================================
 		#ifdef MPU_SENSOR_ENABLE
 		// Get MPU data. Because the MPU-6050 interrupt pin is not wired we have to check DMP data by pooling periodically
@@ -152,26 +96,28 @@ int main(void)
 
 		// SENSOR1
 		if (sensor1 == RESET && sensor1_read == SET) {
-			sensor1 = SET;
 			// Sensor ACTIVE: Do something here (one time task on activation)
+			sensor1 = SET;
 			gpio_bit_set(LED4_GPIO_Port, LED4_Pin);
-			consoleLog("-- SENSOR 1 Active --\n");		
+			consoleLog("-- SENSOR 1 Active --\n");			
 		} else if(sensor1 == SET && sensor1_read == RESET) {
+			// Sensor DEACTIVE: Do something here (one time task on deactivation)
 			sensor1 = RESET;
 			gpio_bit_reset(LED4_GPIO_Port, LED4_Pin);
-			consoleLog("-- SENSOR 1 Deactive --\n");	
+			consoleLog("-- SENSOR 1 Deactive --\n");			
 		}
 		
 		// SENSOR2
 		if (sensor2 == RESET && sensor2_read == SET) {			
-			sensor2 = SET;
 			// Sensor ACTIVE: Do something here (one time task on activation)
+			sensor2 = SET;
 			gpio_bit_set(LED5_GPIO_Port, LED5_Pin);
-			consoleLog("-- SENSOR 2 Active --\n");
+			consoleLog("-- SENSOR 2 Active --\n");			
 		} else if (sensor2 == SET && sensor2_read == RESET) {
+			// Sensor DEACTIVE: Do something here (one time task on deactivation)
 			sensor2 = RESET;
 			gpio_bit_reset(LED5_GPIO_Port, LED5_Pin);
-			consoleLog("-- SENSOR 2 Deactive --\n");
+			consoleLog("-- SENSOR 2 Deactive --\n");			
 		}
 
 		if (sensor1 == SET) {
@@ -181,10 +127,11 @@ int main(void)
 			// Sensor ACTIVE: Do something here (continuous task)
 		}
 		
+		
 		// ==================================== SERIAL Tx/Rx Handling ====================================
 		#ifdef SERIAL_CONTROL
 			// To transmit on USART
-			if (main_loop_counter % 5 == 0 && SET == dma_flag_get(DMA_CH3, DMA_FLAG_FTF)) {		//  check if DMA channel transfer complete (Full Transfer Finish flag == 1)				
+			if (main_loop_counter % 5 == 0 && dma_transfer_number_get(DMA_CH3) == 0) { 	// Check if DMA channel counter is 0 (meaning all data has been transferred)
 				Sideboard.start    	= (uint16_t)SERIAL_START_FRAME;
 				Sideboard.roll    	= (int16_t)mpu.euler.roll;
 				Sideboard.pitch    	= (int16_t)mpu.euler.pitch;
@@ -200,33 +147,13 @@ int main(void)
 		#endif
 		
 		#ifdef SERIAL_FEEDBACK
-			uint16_t checksum;
-			checksum = (uint16_t)(NewFeedback.start ^ NewFeedback.cmd1 ^ NewFeedback.cmd2 ^ NewFeedback.speedR_meas ^ NewFeedback.speedL_meas
-								^ NewFeedback.batVoltage ^ NewFeedback.boardTemp ^ NewFeedback.cmdLed);
-			if (NewFeedback.start == SERIAL_START_FRAME && NewFeedback.checksum == checksum) {
-				if (timeoutFlagSerial) {                	// Check for previous timeout flag  
-					if (timeoutCntSerial-- <= 0)            // Timeout de-qualification
-						timeoutFlagSerial = 0;              // Timeout flag cleared           
-				} else {
-					memcpy(&Feedback, &NewFeedback, sizeof(Feedback));	// Copy the new data 
-					NewFeedback.start = 0xFFFF;             // Change the Start Frame for timeout detection in the next cycle
-					timeoutCntSerial  = 0;                  // Reset the timeout counter         
-				}
-			} else {
-				if (timeoutCntSerial++ >= SERIAL_TIMEOUT) { // Timeout qualification
-				timeoutFlagSerial = 1;                      // Timeout detected
-				timeoutCntSerial  = SERIAL_TIMEOUT;         // Limit timout counter value
-				}
-				// Most probably we are out-of-sync. Try to re-sync by reseting the DMA
-				if (NewFeedback.start != SERIAL_START_FRAME && NewFeedback.start != 0xFFFF && main_loop_counter % 5 == 0) { 
-					dma_channel_disable(DMA_CH4);            
-					usart_Rx_DMA_config(USART_MAIN, (uint8_t *)&NewFeedback,  sizeof(NewFeedback));					
-				}
+			if (timeoutCntSerial++ >= SERIAL_TIMEOUT) { 				// Timeout qualification
+				timeoutFlagSerial = 1;                      			// Timeout detected
+				timeoutCntSerial  = SERIAL_TIMEOUT;         			// Limit timout counter value
 			}
-							
 			if (timeoutFlagSerial && main_loop_counter % 100 == 0) {  	// In case of timeout bring the system to a Safe State and indicate error if desired
 				toggle_led(LED3_GPIO_Port, LED3_Pin);					// Toggle the Yellow LED every 100 ms
-			}	
+			}
 		#endif		
 		
 		main_loop_counter++;

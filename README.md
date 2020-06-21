@@ -17,7 +17,7 @@ The original sideboard hardware supports one 4-pin cable that originally was con
 The LED boards consist of colored LEDs (blue, red, green, orange) used for design and to inform the user about the current hoverboard state. Below the pinout of the LED boards is shown.
 ![ledboard](/docs/pictures/ledboard_pinout.png)
 
-The heart of the sideboard is a [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) with the pinout shown in the follwing figure:
+The sideboard brain is a [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) with the pinout shown in the follwing figure:
 ![MCU_pinout](/docs/pictures/MCU_pinout.png)
 
 A very important component of the sideboard is the IMU [MPU-6050](https://www.invensense.com/products/motion-tracking/6-axis/mpu-6050/) from Invensense. The [MPU-6050](https://www.invensense.com/products/motion-tracking/6-axis/mpu-6050/) determines the board orientation by combining a 3-axis gyroscope and a 3-axis accelerometer on the same silicon die, together with an onboard Digital Motion Processor™ (DMP™), which processes complex 6-axis MotionFusion algorithms. The DMP™ offers many features, such as:

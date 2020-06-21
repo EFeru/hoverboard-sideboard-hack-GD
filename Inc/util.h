@@ -51,6 +51,41 @@ void consoleLog(char *message);
 void toggle_led(uint32_t gpio_periph, uint32_t pin);
 void intro_demo_led(uint32_t tDelay);
 
+/* input initialization function */
+void input_init(void);
+
+/* usart read functions */
+void usart_rx_check(void);
+
+#ifdef SERIAL_DEBUG
+void usart_process_debug(uint8_t *userCommand, uint32_t len);
+#endif
+
+#ifdef SERIAL_CONTROL
+typedef struct{
+  uint16_t  start;
+  int16_t   roll;
+  int16_t   pitch;
+  int16_t   yaw;
+  uint16_t  sensors;
+  uint16_t  checksum;
+} SerialSideboard;
+#endif
+#ifdef SERIAL_FEEDBACK
+typedef struct{
+  uint16_t  start;
+  int16_t   cmd1;
+  int16_t   cmd2;
+  int16_t   speedR_meas;
+  int16_t   speedL_meas;
+  int16_t   batVoltage;
+  int16_t   boardTemp;
+  uint16_t  cmdLed;
+  uint16_t  checksum;
+} SerialFeedback;
+void usart_process_data(SerialFeedback *Feedback_in, SerialFeedback *Feedback_out);
+#endif
+
 /* i2c write/read functions */
 int8_t i2c_writeBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_t *data);
 int8_t i2c_writeByte (uint8_t slaveAddr, uint8_t regAddr, uint8_t data);

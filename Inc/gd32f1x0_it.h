@@ -37,6 +37,8 @@ void DebugMon_Handler(void);
 void PendSV_Handler(void);
 /* SysTick handle function */
 void SysTick_Handler(void);
+/* USART0 handle function */
+void USART1_IRQHandler(void);
 /* I2C0 event handle function */
 void I2C0_EV_IRQHandler(void);
 /* I2C0 error handle function */

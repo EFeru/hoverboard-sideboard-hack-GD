@@ -16,6 +16,7 @@
 #include "systick.h"
 #include "i2c_it.h"
 #include "config.h"
+#include "util.h"
 
 /*!
     \brief      this function handles NMI exception
@@ -119,6 +120,20 @@ void SysTick_Handler(void)
 {
 		tick_count_increment();
     delay_decrement();		
+}
+
+/*!
+    \brief      this function handles the USART1 interrupt request
+    \param[in]  none
+    \param[out] none
+    \retval     none
+*/
+void USART1_IRQHandler(void)
+{    
+    if(RESET != usart_interrupt_flag_get(USART1, USART_INT_FLAG_IDLE)) {    // Check for IDLE line interrupt
+        usart_flag_clear(USART1, USART_FLAG_IDLE);                          // Clear IDLE line flag (otherwise it will continue to enter interrupt)
+        usart_rx_check();                                                   // Check for data to process
+    }
 }
 
 /*!

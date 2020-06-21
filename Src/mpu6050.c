@@ -3714,10 +3714,11 @@ void mpu_android_orient_func(unsigned char orientation)
 /* =========================== User Input Handling =========================== */
 void mpu_handle_input(char c)
 {
+#ifdef SERIAL_DEBUG
     switch (c) {
 		/* This command prints the Help text. */
 		case 'h':
-            consoleLog("=================== HELP COMMANDS ===================\n");
+            consoleLog("====== HELP COMMANDS ======\n");            
             consoleLog("h: Print Help commands\n");
             consoleLog("8: Set Accelerometer sensor on/off\n");
             consoleLog("9: Set Gyroscope sensor on/off\n");
@@ -3730,17 +3731,15 @@ void mpu_handle_input(char c)
             consoleLog("p: Print Pedometer data\n");
             consoleLog("0: Reset Pedometer\n");
             consoleLog("1: Set DMP/MPU frequency 10 Hz\n");
-            consoleLog("2: Set DMP/MPU frequency 20 Hz\n");
-            consoleLog("3: Set DMP/MPU frequency 40 Hz\n");
-            consoleLog("4: Set DMP/MPU frequency 50 Hz\n");
-            consoleLog("5: Set DMP/MPU frequency 100 Hz\n");
+            consoleLog("2: Set DMP/MPU frequency 50 Hz\n");
+            consoleLog("3: Set DMP/MPU frequency 100 Hz\n");
             consoleLog(",: Set DMP interrupt to gesture event only\n");
             consoleLog(".: Set DMP interrupt to continuous\n");
             consoleLog("f: Set DMP on/off\n");
             consoleLog("v: Set Quaternion on/off\n");
-            consoleLog("w: Test out low-power accel mode\n");
+            consoleLog("w: Test low-power accel mode\n");
             consoleLog("s: Run self-test (device must be facing up or down)\n");
-            consoleLog("=====================================================\n");
+            consoleLog("===========================\n");
         break;
 				
 		/* These commands turn off individual sensors. */
@@ -3793,33 +3792,21 @@ void mpu_handle_input(char c)
      */
     case '1':
         if (hal.dmp_on) {
-            if (0 == dmp_set_fifo_rate(10))      {consoleLog("DMP set to 10 Hz.\n");}
+            if (0 == dmp_set_fifo_rate(10))      {consoleLog("DMP: 10 Hz\n");}
         } else
-            if (0 == mpu_set_sample_rate(10))    {consoleLog("MPU set to 10 Hz.\n");}
+            if (0 == mpu_set_sample_rate(10))    {consoleLog("MPU: 10 Hz\n");}
         break;
     case '2':
         if (hal.dmp_on) {
-            if (0 == dmp_set_fifo_rate(20))      {consoleLog("DMP set to 20 Hz.\n");}
+            if (0 == dmp_set_fifo_rate(50))      {consoleLog("DMP: 50 Hz\n");}
         } else
-            if (0 == mpu_set_sample_rate(20))    {consoleLog("MPU set to 20 Hz.\n");}
+            if (0 == mpu_set_sample_rate(50))    {consoleLog("MPU: 50 Hz\n");}
         break;
     case '3':
         if (hal.dmp_on) {
-            if (0 == dmp_set_fifo_rate(40))      {consoleLog("DMP set to 40 Hz.\n");}
+            if (0 == dmp_set_fifo_rate(100))     {consoleLog("DMP: 100 Hz\n");}
         } else
-            if (0 == mpu_set_sample_rate(40))    {consoleLog("MPU set to 40 Hz.\n");}
-        break;
-    case '4':
-        if (hal.dmp_on) {
-            if (0 == dmp_set_fifo_rate(50))      {consoleLog("DMP set to 50 Hz.\n");}
-        } else
-            if (0 == mpu_set_sample_rate(50))    {consoleLog("MPU set to 50 Hz.\n");}
-        break;
-    case '5':
-        if (hal.dmp_on) {
-            if (0 == dmp_set_fifo_rate(100))     {consoleLog("DMP set to 100 Hz.\n");}
-        } else
-            if (0 == mpu_set_sample_rate(100))   {consoleLog("MPU set to 100 Hz.\n");}
+            if (0 == mpu_set_sample_rate(100))   {consoleLog("MPU: 100 Hz\n");}
         break;
 				
 		/* Set hardware to interrupt on gesture event only. This feature is
@@ -3918,7 +3905,7 @@ void mpu_handle_input(char c)
     default:
         break;
     }
-
+#endif // SERIAL_DEBUG
 }
 
 

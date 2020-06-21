@@ -19,12 +19,35 @@
 
 // Includes
 #include <stdio.h>
+#include <string.h>
 #include "systick.h"
 #include "gd32f1x0.h"
 #include "defines.h"
 #include "config.h"
+#include "setup.h"
 #include "util.h"
+#include "mpu6050.h"
 
+// USART variables
+#ifdef SERIAL_CONTROL
+SerialSideboard Sideboard;
+#endif
+
+#if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
+static uint8_t  rx_buffer[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
+static uint32_t rx_buffer_len = ARRAY_LEN(rx_buffer);
+#endif
+
+#ifdef SERIAL_FEEDBACK
+SerialFeedback Feedback;
+SerialFeedback FeedbackRaw;
+uint16_t timeoutCntSerial = 0;  				// Timeout counter for Rx Serial command
+uint8_t timeoutFlagSerial = 0;  				// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+static uint32_t Feedback_len  = sizeof(Feedback);
+#endif
+
+// MPU variables
+ErrStatus 			mpuStatus; 					// holds the MPU-6050 status: SUCCESS or ERROR
 
 // MAIN I2C variables
 volatile int8_t     i2c_status;
@@ -119,6 +142,123 @@ void intro_demo_led(uint32_t tDelay)
 	}		
 		
 }
+
+/* =========================== Input Initialization Function =========================== */
+void input_init(void) {
+	#ifdef SERIAL_CONTROL
+		usart_Tx_DMA_config(USART_MAIN, (uint8_t *)&Sideboard, sizeof(Sideboard));
+	#endif
+	#if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
+		usart_Rx_DMA_config(USART_MAIN, (uint8_t *)rx_buffer, sizeof(rx_buffer));
+	#endif
+
+	intro_demo_led(100);								// Short LEDs intro demo with 100 ms delay. This also gives some time for the MPU-6050 to power-up.	
+
+	#ifdef MPU_SENSOR_ENABLE
+		if(mpu_config()) { 								// IMU MPU-6050 config
+			mpuStatus = ERROR;
+			gpio_bit_set(LED1_GPIO_Port, LED1_Pin);		// Turn on RED LED
+		}
+		else {
+			mpuStatus = SUCCESS;
+			gpio_bit_set(LED2_GPIO_Port, LED2_Pin);		// Turn on GREEN LED
+		}
+		mpu_handle_input('h'); 							// Print the User Help commands to serial
+	#else
+		gpio_bit_set(LED2_GPIO_Port, LED2_Pin);			// Turn on GREEN LED
+	#endif
+}
+
+/* =========================== USART READ Functions =========================== */
+
+/*
+ * Check for new data received on USART with DMA: refactored function from https://github.com/MaJerle/stm32-usart-uart-dma-rx-tx
+ * - this function is called for every USART IDLE line detection, in the USART interrupt handler
+ */
+void usart_rx_check(void)
+{
+	#ifdef SERIAL_DEBUG	
+	static uint32_t old_pos;
+	uint32_t pos;
+
+	pos = rx_buffer_len - dma_transfer_number_get(DMA_CH4); 					// Calculate current position in buffer
+    if (pos != old_pos) {                       								// Check change in received data		
+        if (pos > old_pos) {      												// "Linear" buffer mode: check if current position is over previous one
+        	usart_process_debug(&rx_buffer[old_pos], pos - old_pos);   			// Process data
+        } else {																// "Overflow" buffer mode
+            usart_process_debug(&rx_buffer[old_pos], rx_buffer_len - old_pos); 	// First Process data from the end of buffer            
+            if (pos > 0) {														// Check and continue with beginning of buffer				
+				usart_process_debug(&rx_buffer[0], pos);						// Process remaining data 			
+			}
+        }
+    }
+    old_pos = pos;                              								// Update old position
+	if (old_pos == rx_buffer_len) { 											// Check and manually update if we reached end of buffer
+        old_pos = 0;
+    }
+	#endif // SERIAL_DEBUG
+
+	#ifdef SERIAL_FEEDBACK
+	static uint32_t old_pos;
+	uint32_t pos;
+	uint8_t *ptr;
+    
+    pos = rx_buffer_len - dma_transfer_number_get(DMA_CH4); 					// Calculate current position in buffer
+    if (pos != old_pos) {                       								// Check change in received data
+		ptr = (uint8_t *)&FeedbackRaw;											// Initialize the pointer with FeedbackRaw address
+        if (pos > old_pos && (pos - old_pos) == Feedback_len) {      			// "Linear" buffer mode: check if current position is over previous one AND data length equals expected length
+			memcpy(ptr, &rx_buffer[old_pos], Feedback_len); 					// Copy data. This is possible only if FeedbackRaw is contiguous! (meaning all the structure members have the same size)
+			usart_process_data(&FeedbackRaw, &Feedback);						// Process data
+        } else if ((rx_buffer_len - old_pos + pos) == Feedback_len) {			// "Overflow" buffer mode: check if data length equals expected length
+			memcpy(ptr, &rx_buffer[old_pos], rx_buffer_len - old_pos); 			// First copy data from the end of buffer
+            if (pos > 0) {														// Check and continue with beginning of buffer
+				ptr += rx_buffer_len - old_pos;									// Move to correct position in FeedbackRaw		
+				memcpy(ptr, &rx_buffer[0], pos); 								// Copy remaining data
+            }
+			usart_process_data(&FeedbackRaw, &Feedback); 						// Process data
+        }
+    }
+    old_pos = pos;                              								// Updated old position
+	if (old_pos == rx_buffer_len) { 											// Check and manually update if we reached end of buffer
+        old_pos = 0;
+    }
+	#endif // SERIAL_FEEDBACK
+}
+
+/*
+ * Process Rx debug user command input
+ */
+#ifdef SERIAL_DEBUG
+void usart_process_debug(uint8_t *userCommand, uint32_t len)
+{
+	for (; len > 0; len--, userCommand++) {
+		if (*userCommand != '\n' && *userCommand != '\r') { 	// Do not accept 'new line' and 'carriage return' commands
+			log_i("Command = %c\n", *userCommand);						
+			mpu_handle_input(*userCommand);
+		}
+    }
+}
+#endif // SERIAL_DEBUG
+
+/*
+ * Process Rx data
+ * - if the Feedback_in data is valid (correct START_FRAME and checksum) copy the Feedback_in to Feedback_out
+ */
+#ifdef SERIAL_FEEDBACK
+void usart_process_data(SerialFeedback *Feedback_in, SerialFeedback *Feedback_out)
+{	
+	uint16_t checksum;
+	if (Feedback_in->start == SERIAL_START_FRAME) {
+		checksum = (uint16_t)(Feedback_in->start ^ Feedback_in->cmd1 ^ Feedback_in->cmd2 ^ Feedback_in->speedR_meas ^ Feedback_in->speedL_meas
+							^ Feedback_in->batVoltage ^ Feedback_in->boardTemp ^ Feedback_in->cmdLed);
+		if (Feedback_in->checksum == checksum) {					
+			*Feedback_out = *Feedback_in;
+			timeoutCntSerial  = 0;		// Reset timeout counter
+			timeoutFlagSerial = 0; 		// Clear timeout flag
+		}
+	}
+}
+#endif // SERIAL_FEEDBACK
 
 /* =========================== I2C WRITE Functions =========================== */
 

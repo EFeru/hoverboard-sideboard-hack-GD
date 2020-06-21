@@ -26,7 +26,7 @@
 #include "util.h"
 
 // Global variables
-extern volatile ErrStatus     	status;
+extern volatile ErrStatus status;
 
 // Private variables
 static rcu_periph_enum USART_CLK[USARTn]	= { USART_AUX_CLK,
@@ -179,7 +179,12 @@ void usart_config(uint32_t selUSART, uint32_t selBaudRate) {
 	usart_baudrate_set(selUSART, selBaudRate);
 	usart_transmit_config(selUSART, USART_TRANSMIT_ENABLE);
 	usart_receive_config(selUSART, USART_RECEIVE_ENABLE);
+	usart_oversample_config(selUSART, USART_OVSMOD_16);		// oversampling: {USART_OVSMOD_8, USART_OVSMOD_16}
+	usart_sample_bit_config(selUSART, USART_OSB_3BIT); 		// sample bit:   {USART_OSB_1BIT, USART_OSB_3BIT }
 	usart_enable(selUSART);
+
+	/* enable the USART IDLE line detection interrupt */
+	usart_interrupt_enable(selUSART, USART_INT_IDLE);
 	
 }
 
@@ -188,7 +193,7 @@ void usart_config(uint32_t selUSART, uint32_t selBaudRate) {
 // DMA_CH3 = USART1_TX
 // DMA_CH4 = USART1_RX
 
-void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {	
+void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t dSize) {	
 	
 	dma_parameter_struct dma_init_struct;	
 	
@@ -203,7 +208,7 @@ void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {
 	dma_init_struct.memory_addr 		= (uint32_t)pData;
 	dma_init_struct.memory_inc 			= DMA_MEMORY_INCREASE_ENABLE;
 	dma_init_struct.memory_width 		= DMA_MEMORY_WIDTH_8BIT;
-	dma_init_struct.number 				= Size;
+	dma_init_struct.number 				= dSize;
 	dma_init_struct.periph_addr 		= USART1_TDATA_ADDRESS;
 	dma_init_struct.periph_inc 			= DMA_PERIPH_INCREASE_DISABLE;
 	dma_init_struct.periph_width 		= DMA_PERIPHERAL_WIDTH_8BIT;
@@ -214,22 +219,25 @@ void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {
 	dma_circulation_disable(DMA_CH3);
 	dma_memory_to_memory_disable(DMA_CH3);
 	
+	/* USART DMA enable for transmission */
+	usart_dma_transmit_config(selUSART, USART_DENT_ENABLE);
+
 	/* enable DMA channel1 */
 	dma_channel_enable(DMA_CH3);
-	
-	/* USART DMA enable for transmission and reception */
-	usart_dma_transmit_config(selUSART, USART_DENT_ENABLE);
 	
 	/* wait DMA channel transfer complete */
 	// while (RESET == dma_flag_get(DMA_CH3, DMA_FLAG_FTF));	
 	
 }
 
-void usart_Rx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {	
+void usart_Rx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t dSize) {	
 	
 	dma_parameter_struct dma_init_struct;
 	
 	// --------------------------- RX Channel ---------------------------
+
+	/* enable DMA clock */
+  	rcu_periph_clock_enable(RCU_DMA);
 
 	/* deinitialize DMA channel4 */
 	dma_deinit(DMA_CH4);
@@ -237,7 +245,7 @@ void usart_Rx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {
 	dma_init_struct.memory_addr 		= (uint32_t)pData;
 	dma_init_struct.memory_inc 			= DMA_MEMORY_INCREASE_ENABLE;
 	dma_init_struct.memory_width 		= DMA_MEMORY_WIDTH_8BIT;
-	dma_init_struct.number 				= Size;
+	dma_init_struct.number 				= dSize;
 	dma_init_struct.periph_addr 		= USART1_RDATA_ADDRESS;
 	dma_init_struct.periph_inc 			= DMA_PERIPH_INCREASE_DISABLE;
 	dma_init_struct.periph_width 		= DMA_PERIPHERAL_WIDTH_8BIT;
@@ -248,9 +256,12 @@ void usart_Rx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size) {
 	dma_circulation_enable(DMA_CH4); 	// dma_circulation_disable(DMA_CH4);
 	dma_memory_to_memory_disable(DMA_CH4);
 
-	dma_channel_enable(DMA_CH4);
+	/* USART DMA enable for reception */	
 	usart_dma_receive_config(selUSART, USART_DENR_ENABLE);
-	
+
+	/* enable DMA channel */
+	dma_channel_enable(DMA_CH4);
+
 	/* wait DMA channel transfer complete */
 	// while (RESET == dma_flag_get(DMA_CH4, DMA_FLAG_FTF));	
 	
@@ -281,6 +292,12 @@ void i2c_config(void) {
 		i2c_ack_config(AUX_I2C, I2C_ACK_ENABLE);
 	#endif
 
+}
+
+
+void usart_nvic_config(void)
+{
+    nvic_irq_enable(USART1_IRQn, 0, 1);
 }
 
 

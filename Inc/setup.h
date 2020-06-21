@@ -27,8 +27,9 @@
 // Function declarations
 void gpio_config(void);
 void usart_config(uint32_t selUSART, uint32_t selBaudRate);
-void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size);
-void usart_Rx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t Size);
+void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t dSize);
+void usart_Rx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t dSize);
+void usart_nvic_config(void);
 
 void i2c_config(void);
 void i2c_nvic_config(void);
