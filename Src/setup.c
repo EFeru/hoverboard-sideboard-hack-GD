@@ -26,7 +26,7 @@
 #include "util.h"
 
 // Global variables
-extern volatile ErrStatus status;
+
 
 // Private variables
 static rcu_periph_enum USART_CLK[USARTn]	= { USART_AUX_CLK,

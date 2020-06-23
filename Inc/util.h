@@ -22,45 +22,9 @@
 #define UTIL_H
 
 #include <stdint.h>
-#include "gd32f1x0.h"
-#include "defines.h"
 
 
-extern volatile int8_t    i2c_status;
-extern volatile i2c_cmd		i2c_ReadWriteCmd;
-extern volatile uint8_t		i2c_slaveAddress;
-extern volatile uint8_t		i2c_regAddress;
-extern volatile uint8_t*	i2c_txbuffer;
-extern volatile uint8_t*  i2c_rxbuffer;
-extern volatile uint8_t   i2c_nDABytes;
-extern volatile  int8_t   i2c_nRABytes;
-
-#ifdef AUX45_USE_I2C
-extern volatile int8_t    i2c_aux_status;
-extern volatile i2c_cmd		i2c_aux_ReadWriteCmd;
-extern volatile uint8_t		i2c_aux_slaveAddress;
-extern volatile uint8_t		i2c_aux_regAddress;
-extern volatile uint8_t*	i2c_aux_txbuffer;
-extern volatile uint8_t*  i2c_aux_rxbuffer;
-extern volatile uint8_t   i2c_aux_nDABytes;
-extern volatile  int8_t   i2c_aux_nRABytes;
-#endif
-
-/* general functions */
-void consoleLog(char *message);
-void toggle_led(uint32_t gpio_periph, uint32_t pin);
-void intro_demo_led(uint32_t tDelay);
-
-/* input initialization function */
-void input_init(void);
-
-/* usart read functions */
-void usart_rx_check(void);
-
-#ifdef SERIAL_DEBUG
-void usart_process_debug(uint8_t *userCommand, uint32_t len);
-#endif
-
+/* Rx Structures USART */
 #ifdef SERIAL_CONTROL
 typedef struct{
   uint16_t  start;
@@ -83,6 +47,22 @@ typedef struct{
   uint16_t  cmdLed;
   uint16_t  checksum;
 } SerialFeedback;
+#endif
+
+/* general functions */
+void consoleLog(char *message);
+void toggle_led(uint32_t gpio_periph, uint32_t pin);
+void intro_demo_led(uint32_t tDelay);
+
+/* input initialization function */
+void input_init(void);
+
+/* usart read functions */
+void usart_rx_check(void);
+#ifdef SERIAL_DEBUG
+void usart_process_debug(uint8_t *userCommand, uint32_t len);
+#endif
+#ifdef SERIAL_FEEDBACK
 void usart_process_data(SerialFeedback *Feedback_in, SerialFeedback *Feedback_out);
 #endif
 

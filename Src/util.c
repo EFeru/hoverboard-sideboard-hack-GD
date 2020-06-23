@@ -36,6 +36,7 @@ SerialSideboard Sideboard;
 #if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
 static uint8_t  rx_buffer[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
 static uint32_t rx_buffer_len = ARRAY_LEN(rx_buffer);
+static uint32_t old_pos;
 #endif
 
 #ifdef SERIAL_FEEDBACK
@@ -178,7 +179,6 @@ void input_init(void) {
 void usart_rx_check(void)
 {
 	#ifdef SERIAL_DEBUG	
-	static uint32_t old_pos;
 	uint32_t pos;
 
 	pos = rx_buffer_len - dma_transfer_number_get(DMA_CH4); 					// Calculate current position in buffer
@@ -199,7 +199,6 @@ void usart_rx_check(void)
 	#endif // SERIAL_DEBUG
 
 	#ifdef SERIAL_FEEDBACK
-	static uint32_t old_pos;
 	uint32_t pos;
 	uint8_t *ptr;
     

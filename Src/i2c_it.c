@@ -20,9 +20,29 @@
 
 #include "gd32f1x0_i2c.h"
 #include "i2c_it.h"
-#include "util.h"
 #include "systick.h"
 #include "config.h"
+#include "defines.h"
+
+extern volatile int8_t    i2c_status;
+extern volatile i2c_cmd   i2c_ReadWriteCmd;
+extern volatile uint8_t   i2c_slaveAddress;
+extern volatile uint8_t   i2c_regAddress;
+extern volatile uint8_t*  i2c_txbuffer;
+extern volatile uint8_t*  i2c_rxbuffer;
+extern volatile uint8_t   i2c_nDABytes;
+extern volatile  int8_t   i2c_nRABytes;
+
+#ifdef AUX45_USE_I2C
+extern volatile int8_t    i2c_aux_status;
+extern volatile i2c_cmd   i2c_aux_ReadWriteCmd;
+extern volatile uint8_t   i2c_aux_slaveAddress;
+extern volatile uint8_t   i2c_aux_regAddress;
+extern volatile uint8_t*  i2c_aux_txbuffer;
+extern volatile uint8_t*  i2c_aux_rxbuffer;
+extern volatile uint8_t   i2c_aux_nDABytes;
+extern volatile  int8_t   i2c_aux_nRABytes;
+#endif
 
 
 void I2C0_EventIRQ_Handler(void)
