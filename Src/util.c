@@ -232,8 +232,10 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len)
 {
 	for (; len > 0; len--, userCommand++) {
 		if (*userCommand != '\n' && *userCommand != '\r') { 	// Do not accept 'new line' and 'carriage return' commands
-			log_i("Command = %c\n", *userCommand);						
+			log_i("Command = %c\n", *userCommand);
+			#ifdef MPU_SENSOR_ENABLE
 			mpu_handle_input(*userCommand);
+			#endif
 		}
     }
 }
