@@ -13,8 +13,8 @@ Table of Contents
 =======================
 
 * [Hardware](#hardware)
-* [Flashing](#flashing)
 * [Example Variants ](#example-variants)
+* [Flashing](#flashing)
 * [3D Visualization Demo](#3d-visualization-demo)
 * [Contributions](#contributions)
 
@@ -43,6 +43,17 @@ The [MPU-6050](https://www.invensense.com/products/motion-tracking/6-axis/mpu-60
 ![MPU6050_pinout](/docs/pictures/MPU6050_pinout.png)
 
 For more details see the [MPU-6050 datasheet](/docs/1_MPU-6000-Datasheet.pdf) and [MPU-6050 registers](/docs/2_MPU-6000-Register-Map.pdf).
+
+
+---
+## Example Variants 
+
+This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
+- **VARIANT_DEBUG**: In this variant the user can interact with sideboard by sending commands via a Serial Monitor to observe and check the capabilities of the sideboard.
+- **VARIANT_HOVERBOARD**: In this variant the sideboard is communicating with the mainboard of a hoverboard using the [FOC firmware repository](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC).
+
+Of course the firmware can be further customized for other needs or projects.
+
 
 ---
 ## Flashing 
@@ -96,15 +107,6 @@ make -e VARIANT=VARIANT_####
 make flash
 ```
 
-
----
-## Example Variants 
-
-This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
-- **VARIANT_DEBUG**: In this variant the user can interact with sideboard by sending commands via a Serial Monitor to observe and check the capabilities of the sideboard.
-- **VARIANT_HOVERBOARD**: In this variant the sideboard is communicating with the mainboard of a hoverboard using the [FOC firmware repository](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC).
-
-Of course the firmware can be further customized for other needs or projects.
 
 ---
 ## 3D Visualization Demo
