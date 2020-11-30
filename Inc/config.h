@@ -27,8 +27,9 @@
 // Ubuntu: define the desired build variant here if you want to use make in console
 // or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_DEBUG". Select only one at a time.
 #if !defined(PLATFORMIO)
-  // #define VARIANT_DEBUG                       // Variant for debugging and checking the capabilities of the side-board
-  // #define VARIANT_HOVERBOARD                  // Variant for using the side-boards connected to the Hoverboard mainboard
+  // #define VARIANT_DEBUG                    // Variant for debugging and checking the capabilities of the side-board
+  // #define VARIANT_HOVERCAR                 // Variant for using the side-boards connected to the Hoverboard mainboard
+  // #define VARIANT_HOVERBOARD               // Variant for using the side-boards connected to the Hoverboard mainboard
 #endif
 
 /* ==================================== DO NOT TOUCH SETTINGS ==================================== */
@@ -39,7 +40,6 @@
 #define DELAY_IN_MAIN_LOOP        1           // [ms] Delay in the main loop
 // #define PRINTF_FLOAT_SUPPORT                  // [-] Uncomment this for printf to support float on Serial Debug. It will increase code size! Better to avoid it!
 /* =============================================================================================== */
-
 
 /* ==================================== SETTINGS MPU-6050 ==================================== */
 #define MPU_SENSOR_ENABLE                     // [-] Enable flag for MPU-6050 sensor. Comment-out this flag to Disable the MPU sensor and reduce code size.
@@ -59,30 +59,48 @@
 #define DMP_SHAKE_REJECT_TIME     40          // [ms] Set shake rejection time. Sets the length of time that the gyro must be outside of the DMP_SHAKE_REJECT_THRESH before taps are rejected. A mandatory 60 ms is added to this parameter.
 #define DMP_SHAKE_REJECT_TIMEOUT  10          // [ms] Set shake rejection timeout. Sets the length of time after a shake rejection that the gyro must stay inside of the threshold before taps can be detected again. A mandatory 60 ms is added to this parameter.
 
-
 /* ==================================== SETTINGS USART ==================================== */
-#if defined(VARIANT_DEBUG)
-  #define SERIAL_DEBUG                        // [-] Define for Serial Debug via the serial port
-#elif defined(VARIANT_HOVERBOARD)
-  #define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
-  #define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
-#endif
-#define USART_MAIN_BAUD           38400       // [bit/s] MAIN Serial Tx/Rx baud rate
 #define SERIAL_START_FRAME        0xABCD      // [-] Start frame definition for reliable serial communication
 #define SERIAL_BUFFER_SIZE        64          // [bytes] Size of Serial Rx buffer. Make sure it is always larger than the 'Feedback' structure size
 #define SERIAL_TIMEOUT            600         // [-] Number of wrong received data for Serial timeout detection. Depends on DELAY_IN_MAIN_LOOP
-
+#define USART_MAIN_BAUD           115200      // [bit/s] MAIN Serial Tx/Rx baud rate
+#define USART_AUX_BAUD            115200      // [bit/s] AUX Serial Tx/Rx baud rate
 
 /* ==================================== SETTINGS AUX ==================================== */
 // #define AUX45_USE_GPIO                        // [-] Use AUX4, AUX5 as GPIO ports
 // #define AUX45_USE_I2C                         // [-] Use AUX4, AUX5 as I2C port
-#define AUX45_USE_USART                       // [-] Use AUX4, AUX5 as USART port
-#ifdef AUX45_USE_USART
-  #define USART_AUX_BAUD          38400       // [bit/s] AUX Serial Tx/Rx baud rate
-#endif
 #ifdef AUX45_USE_I2C
   #define AUX_I2C_SPEED           100000      // [bit/s] Define I2C speed for communicating via AUX45 wires
 #endif
+
+
+
+/* ==================================== VARIANT DEBUG ==================================== */
+#ifdef VARIANT_DEBUG
+  #define SERIAL_DEBUG                        // [-] Define for Serial Debug via the serial port
+#endif
+
+
+/* ==================================== VARIANT HOVERCAR ==================================== */
+#ifdef VARIANT_HOVERCAR
+  #define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
+  #define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
+  #define SERIAL_AUX_TX                       // [-] Use AUX4, AUX5 as USART port
+  #define SERIAL_AUX_RX                       // [-] Use AUX4, AUX5 as USART port
+
+  #define CONTROL_IBUS
+  #define IBUS_NUM_CHANNELS   14              // total number of IBUS channels to receive, even if they are not used.
+  #define IBUS_LENGTH         0x20
+  #define IBUS_COMMAND        0x40
+#endif
+
+
+/* ==================================== VARIANT HOVERBOARD ==================================== */
+#ifdef VARIANT_HOVERBOARD
+  #define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
+  #define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
+#endif
+
 
 
 /* ==================================== VALIDATE SETTINGS ==================================== */
@@ -94,7 +112,7 @@
   #error SERIAL_DEBUG and SERIAL_FEEDBACK not allowed. It is on the same cable.
 #endif
 
-#if defined(AUX45_USE_GPIO) && (defined(AUX45_USE_USART) || defined(AUX45_USE_I2C)) || (defined(AUX45_USE_USART) && defined(AUX45_USE_I2C))
+#if defined(AUX45_USE_GPIO) && (defined(SERIAL_AUX_RX) || defined(AUX45_USE_I2C)) || (defined(SERIAL_AUX_RX) && defined(AUX45_USE_I2C))
   #error AUX45_USE_(GPIO,USART,I2C) not allowed in the same time. It is on the same cable.
 #endif
 

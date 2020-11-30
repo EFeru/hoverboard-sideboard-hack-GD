@@ -104,18 +104,13 @@ int mpu_get_compass_reg(short *data, unsigned long *timestamp);
 int mpu_get_temperature(long *data, unsigned long *timestamp);
 
 int mpu_get_int_status(short *status);
-int mpu_read_fifo(short *gyro, short *accel, unsigned long *timestamp,
-    unsigned char *sensors, unsigned char *more);
-int mpu_read_fifo_stream(unsigned short length, unsigned char *data,
-    unsigned char *more);
+int mpu_read_fifo(short *gyro, short *accel, unsigned long *timestamp, unsigned char *sensors, unsigned char *more);
+int mpu_read_fifo_stream(unsigned short length, unsigned char *data, unsigned char *more);
 int mpu_reset_fifo(void);
 
-int mpu_write_mem(unsigned short mem_addr, unsigned short length,
-    unsigned char *data);
-int mpu_read_mem(unsigned short mem_addr, unsigned short length,
-    unsigned char *data);
-int mpu_load_firmware(unsigned short length, const unsigned char *firmware,
-    unsigned short start_addr, unsigned short sample_rate);
+int mpu_write_mem(unsigned short mem_addr, unsigned short length, unsigned char *data);
+int mpu_read_mem(unsigned short mem_addr, unsigned short length, unsigned char *data);
+int mpu_load_firmware(unsigned short length, const unsigned char *firmware, unsigned short start_addr, unsigned short sample_rate);
 
 int mpu_reg_dump(void);
 int mpu_read_reg(unsigned char reg, unsigned char *data);

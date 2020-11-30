@@ -38,6 +38,8 @@ void PendSV_Handler(void);
 /* SysTick handle function */
 void SysTick_Handler(void);
 /* USART0 handle function */
+void USART0_IRQHandler(void);
+/* USART1 handle function */
 void USART1_IRQHandler(void);
 /* I2C0 event handle function */
 void I2C0_EV_IRQHandler(void);

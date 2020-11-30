@@ -34,16 +34,37 @@ SerialSideboard Sideboard;
 #endif
 
 #if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
-static uint8_t  rx_buffer[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
-static uint32_t rx_buffer_len = ARRAY_LEN(rx_buffer);
+static uint8_t  rx1_buffer[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
+static uint32_t rx1_buffer_len = ARRAY_LEN(rx1_buffer);
 #endif
 
 #ifdef SERIAL_FEEDBACK
 SerialFeedback Feedback;
 SerialFeedback FeedbackRaw;
-uint16_t timeoutCntSerial = 0;  				// Timeout counter for Rx Serial command
-uint8_t timeoutFlagSerial = 0;  				// Timeout Flag for Rx Serial command: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+uint16_t timeoutCntSerial = 0;  				// Timeout counter for UART1 Rx Serial
+uint8_t timeoutFlagSerial = 0;  				// Timeout Flag for UART1 Rx Serial: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
 static uint32_t Feedback_len  = sizeof(Feedback);
+#endif
+
+#ifdef SERIAL_AUX_TX
+SerialAuxTx AuxTx;
+#endif
+
+#ifdef SERIAL_AUX_RX
+static uint8_t  rx0_buffer[SERIAL_BUFFER_SIZE];	// USART Rx DMA circular buffer
+static uint32_t rx0_buffer_len = ARRAY_LEN(rx0_buffer);
+#endif
+
+#ifdef SERIAL_AUX_RX
+SerialCommand command;
+SerialCommand command_raw;
+uint16_t timeoutCntSerial0 = 0;                 // Timeout counter for UART0 Rx Serial
+uint8_t timeoutFlagSerial0 = 0;                 // Timeout Flag for UART0 Rx Serial: 0 = OK, 1 = Problem detected (line disconnected or wrong Rx data)
+static uint32_t command_len = sizeof(command);
+  #ifdef CONTROL_IBUS
+  static uint16_t ibus_chksum;
+  uint16_t ibus_captured_value[IBUS_NUM_CHANNELS];
+  #endif
 #endif
 
 // MPU variables
@@ -149,7 +170,13 @@ void input_init(void) {
 		usart_Tx_DMA_config(USART_MAIN, (uint8_t *)&Sideboard, sizeof(Sideboard));
 	#endif
 	#if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
-		usart_Rx_DMA_config(USART_MAIN, (uint8_t *)rx_buffer, sizeof(rx_buffer));
+		usart_Rx_DMA_config(USART_MAIN, (uint8_t *)rx1_buffer, sizeof(rx1_buffer));
+	#endif
+	#ifdef SERIAL_AUX_TX
+		usart_Tx_DMA_config(USART_AUX, (uint8_t *)&AuxTx, sizeof(AuxTx));
+	#endif
+	#ifdef SERIAL_AUX_RX
+		usart_Rx_DMA_config(USART_AUX, (uint8_t *)rx0_buffer, sizeof(rx0_buffer));
 	#endif
 
 	intro_demo_led(100);								// Short LEDs intro demo with 100 ms delay. This also gives some time for the MPU-6050 to power-up.	
@@ -175,25 +202,54 @@ void input_init(void) {
  * Check for new data received on USART with DMA: refactored function from https://github.com/MaJerle/stm32-usart-uart-dma-rx-tx
  * - this function is called for every USART IDLE line detection, in the USART interrupt handler
  */
-void usart_rx_check(void)
+void usart0_rx_check(void)
+{
+    #ifdef SERIAL_AUX_RX
+    static uint32_t old_pos;
+    uint32_t pos;
+    uint8_t *ptr;
+    
+    pos = rx0_buffer_len - dma_transfer_number_get(USART0_RX_DMA_CH); 			// Calculate current position in buffer
+    if (pos != old_pos) {                       								// Check change in received data
+		ptr = (uint8_t *)&command_raw;											// Initialize the pointer with structure address
+        if (pos > old_pos && (pos - old_pos) == command_len) {      			// "Linear" buffer mode: check if current position is over previous one AND data length equals expected length
+			memcpy(ptr, &rx0_buffer[old_pos], command_len); 					// Copy data. This is possible only if structure is contiguous! (meaning all the structure members have the same size)
+			usart_process_command(&command_raw, &command);						// Process data
+        } else if ((rx0_buffer_len - old_pos + pos) == command_len) {			// "Overflow" buffer mode: check if data length equals expected length
+			memcpy(ptr, &rx0_buffer[old_pos], rx0_buffer_len - old_pos); 		// First copy data from the end of buffer
+            if (pos > 0) {														// Check and continue with beginning of buffer
+				ptr += rx0_buffer_len - old_pos;								// Update position
+				memcpy(ptr, &rx0_buffer[0], pos); 								// Copy remaining data
+            }
+			usart_process_command(&command_raw, &command); 						// Process data
+        }
+    }
+    old_pos = pos;                              								// Updated old position
+	if (old_pos == rx0_buffer_len) { 											// Check and manually update if we reached end of buffer
+        old_pos = 0;
+    }
+    #endif  // SERIAL_AUX_RX
+}
+
+void usart1_rx_check(void)
 {
 	#ifdef SERIAL_DEBUG	
 	static uint32_t old_pos;
 	uint32_t pos;
 
-	pos = rx_buffer_len - dma_transfer_number_get(DMA_CH4); 					// Calculate current position in buffer
+	pos = rx1_buffer_len - dma_transfer_number_get(USART1_RX_DMA_CH); 	        // Calculate current position in buffer
     if (pos != old_pos) {                       								// Check change in received data		
         if (pos > old_pos) {      												// "Linear" buffer mode: check if current position is over previous one
-        	usart_process_debug(&rx_buffer[old_pos], pos - old_pos);   			// Process data
+        	usart_process_debug(&rx1_buffer[old_pos], pos - old_pos);   			// Process data
         } else {																// "Overflow" buffer mode
-            usart_process_debug(&rx_buffer[old_pos], rx_buffer_len - old_pos); 	// First Process data from the end of buffer            
+            usart_process_debug(&rx1_buffer[old_pos], rx1_buffer_len - old_pos); 	// First Process data from the end of buffer            
             if (pos > 0) {														// Check and continue with beginning of buffer				
-				usart_process_debug(&rx_buffer[0], pos);						// Process remaining data 			
+				usart_process_debug(&rx1_buffer[0], pos);						// Process remaining data 			
 			}
         }
     }
     old_pos = pos;                              								// Update old position
-	if (old_pos == rx_buffer_len) { 											// Check and manually update if we reached end of buffer
+	if (old_pos == rx1_buffer_len) { 											// Check and manually update if we reached end of buffer
         old_pos = 0;
     }
 	#endif // SERIAL_DEBUG
@@ -203,23 +259,23 @@ void usart_rx_check(void)
 	uint32_t pos;
 	uint8_t *ptr;
     
-    pos = rx_buffer_len - dma_transfer_number_get(DMA_CH4); 					// Calculate current position in buffer
+    pos = rx1_buffer_len - dma_transfer_number_get(USART1_RX_DMA_CH); 			// Calculate current position in buffer
     if (pos != old_pos) {                       								// Check change in received data
 		ptr = (uint8_t *)&FeedbackRaw;											// Initialize the pointer with FeedbackRaw address
         if (pos > old_pos && (pos - old_pos) == Feedback_len) {      			// "Linear" buffer mode: check if current position is over previous one AND data length equals expected length
-			memcpy(ptr, &rx_buffer[old_pos], Feedback_len); 					// Copy data. This is possible only if FeedbackRaw is contiguous! (meaning all the structure members have the same size)
+			memcpy(ptr, &rx1_buffer[old_pos], Feedback_len); 					// Copy data. This is possible only if FeedbackRaw is contiguous! (meaning all the structure members have the same size)
 			usart_process_data(&FeedbackRaw, &Feedback);						// Process data
-        } else if ((rx_buffer_len - old_pos + pos) == Feedback_len) {			// "Overflow" buffer mode: check if data length equals expected length
-			memcpy(ptr, &rx_buffer[old_pos], rx_buffer_len - old_pos); 			// First copy data from the end of buffer
+        } else if ((rx1_buffer_len - old_pos + pos) == Feedback_len) {			// "Overflow" buffer mode: check if data length equals expected length
+			memcpy(ptr, &rx1_buffer[old_pos], rx1_buffer_len - old_pos); 			// First copy data from the end of buffer
             if (pos > 0) {														// Check and continue with beginning of buffer
-				ptr += rx_buffer_len - old_pos;									// Move to correct position in FeedbackRaw		
-				memcpy(ptr, &rx_buffer[0], pos); 								// Copy remaining data
+				ptr += rx1_buffer_len - old_pos;									// Move to correct position in FeedbackRaw		
+				memcpy(ptr, &rx1_buffer[0], pos); 								// Copy remaining data
             }
 			usart_process_data(&FeedbackRaw, &Feedback); 						// Process data
         }
     }
     old_pos = pos;                              								// Updated old position
-	if (old_pos == rx_buffer_len) { 											// Check and manually update if we reached end of buffer
+	if (old_pos == rx1_buffer_len) { 											// Check and manually update if we reached end of buffer
         old_pos = 0;
     }
 	#endif // SERIAL_FEEDBACK
@@ -261,6 +317,29 @@ void usart_process_data(SerialFeedback *Feedback_in, SerialFeedback *Feedback_ou
 	}
 }
 #endif // SERIAL_FEEDBACK
+
+/*
+ * Process command UART0 Rx data
+ * - if the command_in data is valid (correct START_FRAME and checksum) copy the command_in to command_out
+ */
+#ifdef SERIAL_AUX_RX
+void usart_process_command(SerialCommand *command_in, SerialCommand *command_out)
+{
+  #ifdef CONTROL_IBUS
+    if (command_in->start == IBUS_LENGTH && command_in->type == IBUS_COMMAND) {
+      ibus_chksum = 0xFFFF - IBUS_LENGTH - IBUS_COMMAND;
+      for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i++) {
+        ibus_chksum -= command_in->channels[i];
+      }
+      if (ibus_chksum == (uint16_t)((command_in->checksumh << 8) + command_in->checksuml)) {
+        *command_out = *command_in;
+        timeoutCntSerial0  = 0;        // Reset timeout counter
+        timeoutFlagSerial0 = 0;        // Clear timeout flag
+      }
+    }
+  #endif
+}
+#endif
 
 /* =========================== I2C WRITE Functions =========================== */
 

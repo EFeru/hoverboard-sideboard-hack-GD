@@ -77,24 +77,24 @@
 // USART ports number
 #define USARTn              		2
 
-
-// USART to Auxiliary, connected to USART0
+// USART AUX, connected to USART0
 #define USART_AUX           		USART0
-#define USART_AUX_CLK       		RCU_USART0
-#define USART_AUX_TX_PIN   			GPIO_PIN_9
-#define USART_AUX_RX_PIN    		GPIO_PIN_10
-
-
-// USART to Mainboard, connected to USART1
-#define USART_MAIN     				USART1
-#define USART_MAIN_CLK    			RCU_USART1
-#define USART_MAIN_TX_PIN   		GPIO_PIN_2
-#define USART_MAIN_RX_PIN   		GPIO_PIN_3
-
-// USART address for DMA defines
-#define USART0_TDATA_ADDRESS    	((uint32_t)0x40013828)  // USART0: 0x4001 3800 - 0x4001 3BFF
+#define USART0_CLK       			RCU_USART0
+#define USART0_TX_PIN   			GPIO_PIN_9
+#define USART0_RX_PIN    			GPIO_PIN_10
+#define USART0_TX_DMA_CH 			DMA_CH1
+#define USART0_RX_DMA_CH 			DMA_CH2
+#define USART0_TDATA_ADDRESS    	((uint32_t)0x40013828)  // USART0: 0x4001 3800 - 0x4001 3BFF, Rx offset: 0x28, Tx offset: 0x24
 #define USART0_RDATA_ADDRESS    	((uint32_t)0x40013824)
-#define USART1_TDATA_ADDRESS   	 	((uint32_t)0x40004428) 	// USART1: 0x4000 4400 - 0x4000 47FF
+
+// USART MAIN, connected to USART1
+#define USART_MAIN     				USART1
+#define USART1_CLK    			 	RCU_USART1
+#define USART1_TX_PIN   			GPIO_PIN_2
+#define USART1_RX_PIN   			GPIO_PIN_3
+#define USART1_TX_DMA_CH 			DMA_CH3
+#define USART1_RX_DMA_CH 			DMA_CH4
+#define USART1_TDATA_ADDRESS   	 	((uint32_t)0x40004428) 	// USART1: 0x4000 4400 - 0x4000 47FF, Rx offset: 0x28, Tx offset: 0x24
 #define USART1_RDATA_ADDRESS    	((uint32_t)0x40004424)
 
 

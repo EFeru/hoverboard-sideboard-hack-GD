@@ -29,37 +29,53 @@
 
 
 // Private variables
-static rcu_periph_enum USART_CLK[USARTn]	= { USART_AUX_CLK,
-												USART_MAIN_CLK
+static rcu_periph_enum USART_CLK[USARTn]	= { USART0_CLK,
+												USART1_CLK
 												};
 
-static uint32_t USART_TX_PIN[USARTn] 		= { USART_AUX_TX_PIN,
-											 	USART_MAIN_TX_PIN
+static uint32_t USART_TX_PIN[USARTn] 		= { USART0_TX_PIN,
+											 	USART1_TX_PIN
 												};
 
-static uint32_t USART_RX_PIN[USARTn] 		= { USART_AUX_RX_PIN,
-											 	USART_MAIN_RX_PIN
+static uint32_t USART_RX_PIN[USARTn] 		= { USART0_RX_PIN,
+											 	USART1_RX_PIN
 												};
 
-																						
+static dma_channel_enum USART_TX_DMA_CH[USARTn] = { USART0_TX_DMA_CH,
+												    USART1_TX_DMA_CH
+												  };
+
+static dma_channel_enum USART_RX_DMA_CH[USARTn] = { USART0_RX_DMA_CH,
+												    USART1_RX_DMA_CH
+												  };
+
+static uint32_t USART_TDATA_ADDRESS[USARTn] = { USART0_TDATA_ADDRESS,
+												USART1_TDATA_ADDRESS
+												};
+
+static uint32_t USART_RDATA_ADDRESS[USARTn] = { USART0_RDATA_ADDRESS,
+												USART1_RDATA_ADDRESS
+												};
+
+
 void gpio_config(void) {
 	
 	/* =========================== Configure LEDs GPIOs =========================== */
 	/* enable the GPIO clock */
 	rcu_periph_clock_enable(RCU_GPIOA);
-	rcu_periph_clock_enable(RCU_GPIOB);		
+	rcu_periph_clock_enable(RCU_GPIOB);
 	
 	/* configure GPIO port */ 
-	gpio_mode_set(LED1_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED1_Pin);    
+	gpio_mode_set(LED1_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED1_Pin);
 	gpio_mode_set(LED2_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED2_Pin);
-	gpio_mode_set(LED3_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED3_Pin);    
-	gpio_mode_set(LED4_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED4_Pin);    
-	gpio_mode_set(LED5_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED5_Pin);	
+	gpio_mode_set(LED3_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED3_Pin);
+	gpio_mode_set(LED4_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED4_Pin);
+	gpio_mode_set(LED5_GPIO_Port, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED5_Pin);
 	gpio_output_options_set(LED1_GPIO_Port, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, LED1_Pin);
 	gpio_output_options_set(LED2_GPIO_Port, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, LED2_Pin);
 	gpio_output_options_set(LED3_GPIO_Port, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, LED3_Pin);
 	gpio_output_options_set(LED4_GPIO_Port, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, LED4_Pin);
-	gpio_output_options_set(LED5_GPIO_Port, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, LED5_Pin);    
+	gpio_output_options_set(LED5_GPIO_Port, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, LED5_Pin);
 	
 	/* reset GPIO pin */
 	gpio_bit_reset(LED1_GPIO_Port, LED1_Pin);
@@ -69,7 +85,7 @@ void gpio_config(void) {
 	gpio_bit_reset(LED5_GPIO_Port, LED5_Pin);
 	
 	
-	/* =========================== Configure Sensors GPIOs =========================== */		
+	/* =========================== Configure Sensors GPIOs =========================== */
 	/* enable the GPIO clock */
 	rcu_periph_clock_enable(RCU_GPIOA);
 	rcu_periph_clock_enable(RCU_GPIOC);
@@ -79,7 +95,7 @@ void gpio_config(void) {
 	gpio_mode_set(SENSOR2_GPIO_Port, GPIO_MODE_INPUT, GPIO_PUPD_NONE, SENSOR2_Pin);
 	
 	
-	/* =========================== Configure I2C GPIOs =========================== */		
+	/* =========================== Configure I2C GPIOs =========================== */
 	/* enable I2C clock */
 	rcu_periph_clock_enable(RCU_GPIOB);
   	rcu_periph_clock_enable(MPU_RCU_I2C);
@@ -145,16 +161,17 @@ void gpio_config(void) {
 }
 
 
-void usart_config(uint32_t selUSART, uint32_t selBaudRate) {	
+void usart_config(uint32_t selUSART, uint32_t selBaudRate) {
 	
-	/* enable GPIO clock */
-	uint32_t USART_ID = 0U;
+	uint8_t USART_ID = 0U;
 	if(selUSART == USART0){
 		USART_ID = 0U;
 	}
 	if(selUSART == USART1){
 		USART_ID = 1U;
-	}	
+	}
+
+	/* enable GPIO clock */
 	rcu_periph_clock_enable(USART_GPIO_CLK);
 
 	/* enable USART clock */
@@ -193,40 +210,48 @@ void usart_config(uint32_t selUSART, uint32_t selBaudRate) {
 // DMA_CH3 = USART1_TX
 // DMA_CH4 = USART1_RX
 
-void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t dSize) {	
+void usart_Tx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t dSize) {
 	
-	dma_parameter_struct dma_init_struct;	
+	dma_parameter_struct dma_init_struct;
 	
-	// --------------------------- TX Channel ---------------------------	
+	// --------------------------- TX Channel ---------------------------
+
+	uint8_t USART_ID = 0U;
+	if(selUSART == USART0){
+		USART_ID = 0U;
+	}
+	if(selUSART == USART1){
+		USART_ID = 1U;
+	}
 
 	/* enable DMA clock */
   	rcu_periph_clock_enable(RCU_DMA);
 	
 	/* deinitialize DMA channel2 */
-	dma_deinit(DMA_CH3);
+	dma_deinit(USART_TX_DMA_CH[USART_ID]);
 	dma_init_struct.direction 			= DMA_MEMORY_TO_PERIPHERAL;
 	dma_init_struct.memory_addr 		= (uint32_t)pData;
 	dma_init_struct.memory_inc 			= DMA_MEMORY_INCREASE_ENABLE;
 	dma_init_struct.memory_width 		= DMA_MEMORY_WIDTH_8BIT;
 	dma_init_struct.number 				= dSize;
-	dma_init_struct.periph_addr 		= USART1_TDATA_ADDRESS;
+	dma_init_struct.periph_addr 		= USART_TDATA_ADDRESS[USART_ID];
 	dma_init_struct.periph_inc 			= DMA_PERIPH_INCREASE_DISABLE;
 	dma_init_struct.periph_width 		= DMA_PERIPHERAL_WIDTH_8BIT;
 	dma_init_struct.priority 			= DMA_PRIORITY_ULTRA_HIGH;			// Priorities: *_LOW, *_MEDIUM, *_HIGH, *_ULTRA_HIGH,
-	dma_init(DMA_CH3, dma_init_struct);
+	dma_init(USART_TX_DMA_CH[USART_ID], dma_init_struct);
 	
 	/* configure DMA mode */
-	dma_circulation_disable(DMA_CH3);
-	dma_memory_to_memory_disable(DMA_CH3);
+	dma_circulation_disable(USART_TX_DMA_CH[USART_ID]);
+	dma_memory_to_memory_disable(USART_TX_DMA_CH[USART_ID]);
 	
 	/* USART DMA enable for transmission */
 	usart_dma_transmit_config(selUSART, USART_DENT_ENABLE);
 
 	/* enable DMA channel1 */
-	dma_channel_enable(DMA_CH3);
+	dma_channel_enable(USART_TX_DMA_CH[USART_ID]);
 	
 	/* wait DMA channel transfer complete */
-	// while (RESET == dma_flag_get(DMA_CH3, DMA_FLAG_FTF));	
+	// while (RESET == dma_flag_get(USART_TX_DMA[USART_ID], DMA_FLAG_FTF));	
 	
 }
 
@@ -236,34 +261,42 @@ void usart_Rx_DMA_config(uint32_t selUSART, uint8_t *pData, uint32_t dSize) {
 	
 	// --------------------------- RX Channel ---------------------------
 
+	uint8_t USART_ID = 0U;
+	if(selUSART == USART0){
+		USART_ID = 0U;
+	}
+	if(selUSART == USART1){
+		USART_ID = 1U;
+	}
+
 	/* enable DMA clock */
   	rcu_periph_clock_enable(RCU_DMA);
 
 	/* deinitialize DMA channel4 */
-	dma_deinit(DMA_CH4);
+	dma_deinit(USART_RX_DMA_CH[USART_ID]);
 	dma_init_struct.direction 			= DMA_PERIPHERAL_TO_MEMORY;
 	dma_init_struct.memory_addr 		= (uint32_t)pData;
 	dma_init_struct.memory_inc 			= DMA_MEMORY_INCREASE_ENABLE;
 	dma_init_struct.memory_width 		= DMA_MEMORY_WIDTH_8BIT;
 	dma_init_struct.number 				= dSize;
-	dma_init_struct.periph_addr 		= USART1_RDATA_ADDRESS;
+	dma_init_struct.periph_addr 		= USART_RDATA_ADDRESS[USART_ID];
 	dma_init_struct.periph_inc 			= DMA_PERIPH_INCREASE_DISABLE;
 	dma_init_struct.periph_width 		= DMA_PERIPHERAL_WIDTH_8BIT;
 	dma_init_struct.priority 			= DMA_PRIORITY_ULTRA_HIGH; 			// Priorities: *_LOW, *_MEDIUM, *_HIGH, *_ULTRA_HIGH,
-	dma_init(DMA_CH4, dma_init_struct);
+	dma_init(USART_RX_DMA_CH[USART_ID], dma_init_struct);
 	
 	/* configure DMA mode */
-	dma_circulation_enable(DMA_CH4); 	// dma_circulation_disable(DMA_CH4);
-	dma_memory_to_memory_disable(DMA_CH4);
+	dma_circulation_enable(USART_RX_DMA_CH[USART_ID]); 	// dma_circulation_disable(USART_RX_DMA[USART_ID]);
+	dma_memory_to_memory_disable(USART_RX_DMA_CH[USART_ID]);
 
 	/* USART DMA enable for reception */	
 	usart_dma_receive_config(selUSART, USART_DENR_ENABLE);
 
 	/* enable DMA channel */
-	dma_channel_enable(DMA_CH4);
+	dma_channel_enable(USART_RX_DMA_CH[USART_ID]);
 
 	/* wait DMA channel transfer complete */
-	// while (RESET == dma_flag_get(DMA_CH4, DMA_FLAG_FTF));	
+	// while (RESET == dma_flag_get(USART_RX_DMA[USART_ID], DMA_FLAG_FTF));	
 	
 }
 

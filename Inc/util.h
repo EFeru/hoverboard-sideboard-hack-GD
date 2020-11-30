@@ -23,8 +23,7 @@
 
 #include <stdint.h>
 
-
-/* Rx Structures USART */
+/* Tx structure USART MAIN */
 #ifdef SERIAL_CONTROL
 typedef struct{
   uint16_t  start;
@@ -35,6 +34,7 @@ typedef struct{
   uint16_t  checksum;
 } SerialSideboard;
 #endif
+/* Rx structure USART MAIN */
 #ifdef SERIAL_FEEDBACK
 typedef struct{
   uint16_t  start;
@@ -49,6 +49,28 @@ typedef struct{
 } SerialFeedback;
 #endif
 
+/* Tx structure USART AUX */
+#ifdef SERIAL_AUX_TX
+typedef struct{
+  uint16_t  start;
+  int16_t   signal1;
+  int16_t   signal2;
+  uint16_t  checksum;
+} SerialAuxTx;
+#endif
+/* Rx structure USART AUX */
+#ifdef SERIAL_AUX_RX
+  #ifdef CONTROL_IBUS
+  typedef struct{
+    uint8_t  start;
+    uint8_t  type; 
+    uint8_t  channels[IBUS_NUM_CHANNELS*2];
+    uint8_t  checksuml;
+    uint8_t  checksumh;
+  } SerialCommand;
+  #endif
+#endif
+
 /* general functions */
 void consoleLog(char *message);
 void toggle_led(uint32_t gpio_periph, uint32_t pin);
@@ -58,12 +80,16 @@ void intro_demo_led(uint32_t tDelay);
 void input_init(void);
 
 /* usart read functions */
-void usart_rx_check(void);
+void usart0_rx_check(void);
+void usart1_rx_check(void);
 #ifdef SERIAL_DEBUG
 void usart_process_debug(uint8_t *userCommand, uint32_t len);
 #endif
 #ifdef SERIAL_FEEDBACK
 void usart_process_data(SerialFeedback *Feedback_in, SerialFeedback *Feedback_out);
+#endif
+#ifdef SERIAL_AUX_RX
+void usart_process_command(SerialCommand *command_in, SerialCommand *command_out);
 #endif
 
 /* i2c write/read functions */
