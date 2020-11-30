@@ -66,23 +66,10 @@ To build and flash choose one of the following methods:
 
 ### Method 1: Using Platformio IDE
 
-Because the [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) is not yet supported by [PlatformIO](https://platformio.org/), we have to make two extra steps. These steps can be skipped once the board is supported (see [this thread](https://community.platformio.org/t/build-gd32-project-with-platformio/11944)).
-
-- go to your PlatformIO home folder (Windows: `C:\Users\<user>\.platformio`, Unix/Max: `/home/<user>/.platformio`). Then go into `packages`. If the folder `framework-spl` exists, delete it. 
-
-- unpack the `framework-spl.zip` in the `packages` folder so that the directory structure is now:
-```
-packages/
-| - framework-spl/
-| |--  gd32/
-| |--  platformio/
-| |--  stm32/
-| |--  package.json
-```
-(This folder contains the `GD32F1x0_Firmware_Library_v3.1.0` files)
-
 - open the project folder in the IDE of choice (vscode or Atom)
 - press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
+
+Note the [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) is now supported by [PlatformIO](https://platformio.org/), see [https://github.com/maxgerhardt/pio-gd32f130c6](https://github.com/maxgerhardt/pio-gd32f130c6).
 
 ### Method 2: Using Keil uVision
 
