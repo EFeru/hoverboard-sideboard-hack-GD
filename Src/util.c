@@ -570,17 +570,20 @@ int8_t i2c_writeBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_
     i2c_nDABytes        = length;
     i2c_nRABytes        = 1;
 
+    uint16_t i2c_timeout = 0;
+
     // enable the I2C0 interrupt
     i2c_interrupt_enable(MPU_I2C, I2C_INT_ERR | I2C_INT_BUF | I2C_INT_EV);
 
     // the master waits until the I2C bus is idle
-    while(i2c_flag_get(MPU_I2C, I2C_FLAG_I2CBSY));
+    while(i2c_flag_get(MPU_I2C, I2C_FLAG_I2CBSY) && i2c_timeout++ < 20000);
 
     // the master sends a start condition to I2C bus
     i2c_start_on_bus(MPU_I2C);
-
+    
     // Wait until all data bytes are sent/received
-    while(i2c_nDABytes > 0);
+    i2c_timeout = 0;
+    while(i2c_nDABytes > 0 && i2c_timeout++ < 20000);
 
     return i2c_status;
 
@@ -627,6 +630,8 @@ int8_t i2c_readBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_t
     i2c_nDABytes        = length;
     i2c_nRABytes        = 1;
 
+    uint16_t i2c_timeout = 0;
+
     // enable the I2C0 interrupt
     i2c_interrupt_enable(MPU_I2C, I2C_INT_ERR | I2C_INT_BUF | I2C_INT_EV);
 
@@ -635,13 +640,14 @@ int8_t i2c_readBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_t
     }
 
     // the master waits until the I2C bus is idle
-    while(i2c_flag_get(MPU_I2C, I2C_FLAG_I2CBSY));
+    while(i2c_flag_get(MPU_I2C, I2C_FLAG_I2CBSY) && i2c_timeout++ < 20000);
 
     // the master sends a start condition to I2C bus
     i2c_start_on_bus(MPU_I2C);
 
     // Wait until all data bytes are sent/received
-    while(i2c_nDABytes > 0);
+    i2c_timeout = 0;
+    while(i2c_nDABytes > 0 && i2c_timeout++ < 20000);
 
     // Return status
     return i2c_status;

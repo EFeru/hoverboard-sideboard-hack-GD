@@ -342,12 +342,12 @@ void i2c_nvic_config(void)
     /* configure the NVIC peripheral */
     nvic_priority_group_set(NVIC_PRIGROUP_PRE1_SUB3);
 
-    nvic_irq_enable(I2C0_EV_IRQn, 0, 3);
-    nvic_irq_enable(I2C0_ER_IRQn, 0, 2);
+    nvic_irq_enable(I2C0_EV_IRQn, 0, 0);
+    nvic_irq_enable(I2C0_ER_IRQn, 0, 0);
 
     #ifdef AUX45_USE_I2C
-    nvic_irq_enable(I2C1_EV_IRQn, 0, 4);
-    nvic_irq_enable(I2C1_ER_IRQn, 0, 1);
+    nvic_irq_enable(I2C1_EV_IRQn, 0, 2);
+    nvic_irq_enable(I2C1_ER_IRQn, 0, 2);
     #endif
 }
 
