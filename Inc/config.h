@@ -78,6 +78,13 @@
 /* ==================================== VARIANT DEBUG ==================================== */
 #ifdef VARIANT_DEBUG
   #define SERIAL_DEBUG                        // [-] Define for Serial Debug via the serial port
+  #define SERIAL_AUX_RX                       // [-] Use AUX4, AUX5 as USART port
+  // #define SERIAL_AUX_TX                       // [-] Use AUX4, AUX5 as USART port
+
+  #define CONTROL_IBUS
+  #define IBUS_NUM_CHANNELS   14              // Total number of IBUS channels to receive, even if they are not used.
+  #define IBUS_LENGTH         0x20
+  #define IBUS_COMMAND        0x40
 #endif
 
 
@@ -85,11 +92,11 @@
 #ifdef VARIANT_HOVERCAR
   #define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
   #define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
-  #define SERIAL_AUX_TX                       // [-] Use AUX4, AUX5 as USART port
   #define SERIAL_AUX_RX                       // [-] Use AUX4, AUX5 as USART port
+  // #define SERIAL_AUX_TX                       // [-] Use AUX4, AUX5 as USART port
 
   #define CONTROL_IBUS
-  #define IBUS_NUM_CHANNELS   14              // total number of IBUS channels to receive, even if they are not used.
+  #define IBUS_NUM_CHANNELS   14              // Total number of IBUS channels to receive, even if they are not used.
   #define IBUS_LENGTH         0x20
   #define IBUS_COMMAND        0x40
 #endif
@@ -112,7 +119,8 @@
   #error SERIAL_DEBUG and SERIAL_FEEDBACK not allowed. It is on the same cable.
 #endif
 
-#if defined(AUX45_USE_GPIO) && (defined(SERIAL_AUX_RX) || defined(AUX45_USE_I2C)) || (defined(SERIAL_AUX_RX) && defined(AUX45_USE_I2C))
+#if defined(AUX45_USE_GPIO) && (defined(SERIAL_AUX_RX) || defined(SERIAL_AUX_TX) || defined(AUX45_USE_I2C)) \
+  || ((defined(SERIAL_AUX_RX) || defined(SERIAL_AUX_TX)) && defined(AUX45_USE_I2C))
   #error AUX45_USE_(GPIO,USART,I2C) not allowed in the same time. It is on the same cable.
 #endif
 

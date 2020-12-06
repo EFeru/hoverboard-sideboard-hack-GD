@@ -54,7 +54,6 @@
 
 /* Set up APIs */
 int mpu_init(void);
-int mpu_init_slave(void);
 int mpu_set_bypass(unsigned char bypass_on);
 
 /* Configuration APIs */
@@ -134,9 +133,13 @@ void mpu_calc_euler_angles(void);
 void mpu_tap_func(unsigned char direction, unsigned char count);
 void mpu_android_orient_func(unsigned char orientation);
 
-/* Handle user input commands */
-void mpu_handle_input(char c);
+/* MPU Print data */
 void mpu_print_to_console(void);
 
 #endif // MPU_SENSOR_ENABLE
+
+/* Handle user input commands */
+void mpu_handle_input(char c);
+
 #endif // MPU6050_H
+

@@ -27,10 +27,11 @@
 #ifdef SERIAL_CONTROL
 typedef struct{
   uint16_t  start;
-  int16_t   roll;
-  int16_t   pitch;
-  int16_t   yaw;
-  uint16_t  sensors;
+  int16_t   pitch;      // Angle
+  int16_t   dPitch;     // Angle derivative
+  int16_t   cmd1;       // RC Channel 1
+  int16_t   cmd2;       // RC Channel 2
+  uint16_t  sensors;    // RC Switches and Optical sideboard sensors
   uint16_t  checksum;
 } SerialSideboard;
 #endif
@@ -75,12 +76,18 @@ typedef struct{
 void consoleLog(char *message);
 void toggle_led(uint32_t gpio_periph, uint32_t pin);
 void intro_demo_led(uint32_t tDelay);
+uint8_t switch_check(uint16_t ch, uint8_t type);
 
 /* input initialization function */
 void input_init(void);
 
-/* usart read functions */
-void usart0_rx_check(void);
+/* handle functions */
+void handle_mpu6050(void);
+void handle_sensors(void);
+void handle_usart(void);
+void handle_leds(void);
+
+/* usart1 read functions */
 void usart1_rx_check(void);
 #ifdef SERIAL_DEBUG
 void usart_process_debug(uint8_t *userCommand, uint32_t len);
@@ -88,9 +95,15 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len);
 #ifdef SERIAL_FEEDBACK
 void usart_process_data(SerialFeedback *Feedback_in, SerialFeedback *Feedback_out);
 #endif
+
+/* usart0 read functions */
+void usart0_rx_check(void);
 #ifdef SERIAL_AUX_RX
 void usart_process_command(SerialCommand *command_in, SerialCommand *command_out);
 #endif
+
+/* AUX Serial Print data */
+void aux_print_to_console(void);
 
 /* i2c write/read functions */
 int8_t i2c_writeBytes(uint8_t slaveAddr, uint8_t regAddr, uint8_t length, uint8_t *data);
