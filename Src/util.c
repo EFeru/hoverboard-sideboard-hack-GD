@@ -110,6 +110,7 @@ volatile  int8_t    i2c_aux_nRABytes;
 #endif
 
 
+
 /* =========================== General Functions =========================== */
 
 void consoleLog(char *message)
@@ -182,10 +183,10 @@ void intro_demo_led(uint32_t tDelay)
 
 
 uint8_t switch_check(uint16_t ch, uint8_t type) {
-    if (type) { // 3 position switch
-        if      (ch > 850) return 2;    // switch in position 2
-        else if (ch > 250) return 1;    // switch in position 1
-        else               return 0;    // switch in position 0
+    if (type) { // 3 positions switch
+        if      (ch < 250) return 0;    // switch in position 0
+        else if (ch < 850) return 1;    // switch in position 1
+        else               return 2;    // switch in position 2
     } else {    // 2 positions switch
         return  (ch > 850);
     }
@@ -376,7 +377,7 @@ void handle_usart(void) {
 /*
  * Handle of the sideboard LEDs
  */
-void handle_leds(void){
+void handle_leds(void) {
     #ifdef SERIAL_FEEDBACK
         if (!timeoutFlagSerial1) {
             if (Feedback.cmdLed & LED1_SET) { gpio_bit_set(LED1_GPIO_Port, LED1_Pin); } else { gpio_bit_reset(LED1_GPIO_Port, LED1_Pin); }
@@ -463,7 +464,7 @@ void usart_process_debug(uint8_t *userCommand, uint32_t len)
  */
 #ifdef SERIAL_FEEDBACK
 void usart_process_data(SerialFeedback *Feedback_in, SerialFeedback *Feedback_out)
-{	
+{
     uint16_t checksum;
     if (Feedback_in->start == SERIAL_START_FRAME) {
         checksum = (uint16_t)(Feedback_in->start ^ Feedback_in->cmd1 ^ Feedback_in->cmd2 ^ Feedback_in->speedR_meas ^ Feedback_in->speedL_meas

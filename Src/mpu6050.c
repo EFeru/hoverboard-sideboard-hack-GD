@@ -3720,19 +3720,19 @@ void mpu_print_to_console(void)
 {
 #ifdef SERIAL_DEBUG
     if (hal.report & PRINT_ACCEL) {
-        log_i( "Accel[XYZ]: %d %d %d\r\n", mpu.accel.x, mpu.accel.y, mpu.accel.z);
+        log_i( "accX:%d accY:%d accZ:%d\r\n", mpu.accel.x, mpu.accel.y, mpu.accel.z);
     }
     if (hal.report & PRINT_GYRO) {
-        log_i( "Gyro[XYZ]: %d %d %d\r\n", mpu.gyro.x, mpu.gyro.y, mpu.gyro.z);
+        log_i( "gyrX:%d gyrY:%d gyrZ:%d\r\n", mpu.gyro.x, mpu.gyro.y, mpu.gyro.z);
     }
     if (hal.report & PRINT_QUAT) {
-        log_i( "Quat[WXYZ]: %ld %ld %ld %ld\r\n", (long)mpu.quat.w, (long)mpu.quat.x, (long)mpu.quat.y, (long)mpu.quat.z);
+        log_i( "qW:%ld qX:%ld qY:%ld qZ:%ld\r\n", (long)mpu.quat.w, (long)mpu.quat.x, (long)mpu.quat.y, (long)mpu.quat.z);
     }
     if (hal.report & PRINT_EULER) {
-        log_i( "Euler[RPY]: %d %d %d\r\n", mpu.euler.roll, mpu.euler.pitch, mpu.euler.yaw);
+        log_i( "Roll:%d Pitch:%d Yaw:%d\r\n", mpu.euler.roll, mpu.euler.pitch, mpu.euler.yaw);
     }
     if (hal.report & PRINT_TEMP) {
-        log_i( "Temp: %d\r\n", mpu.temp);
+        log_i( "Temp:%d\r\n", mpu.temp);
     }
     if (hal.report & PRINT_PEDO) {
         unsigned long timestamp;
