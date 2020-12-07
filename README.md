@@ -15,8 +15,8 @@ Table of Contents
 * [Hardware](#hardware)
 * [Example Variants ](#example-variants)
 * [Flashing](#flashing)
-* [3D Visualization Demo](#3d-visualization-demo)
 * [Wiring iBUS Receiver](#wiring-ibus-receiver)
+* [3D Visualization Demo](#3d-visualization-demo)
 * [Contributions](#contributions)
 
 ---
@@ -98,19 +98,20 @@ make flash
 
 
 ---
+## Wiring iBUS Receiver
+
+An RC transmitter (Flysky [FS-i6S](https://www.banggood.com/custlink/3KvdPnfDPc) or [FS-i6X](https://www.banggood.com/custlink/KmDy5swKPD)) can be connected to the sideboard using an [FS-iA6B](https://www.banggood.com/custlink/KD3RFswKcT) receiver as shown in the following schematic:
+
+![wiring_iBUS_pic](/docs/pictures/wiring_ibus_rc.png)
+
+
+---
 ## 3D Visualization Demo
 
 By [converting Quaternions to Euler angles](https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles), we can make a [3D visualization example](/docs/sketch_processing/sketch_processing.pde) in [Processing](https://processing.org/) as shown below. For this Demo VARIANT_DEBUG was used.
 
 ![sketch_pic](/docs/pictures/sketch_processing_pic.png)
 
-
----
-## Wiring iBUS Receiver
-
-An RC transmitter (Flysky [FS-i6S](https://www.banggood.com/custlink/3KvdPnfDPc) or [FS-i6X](https://www.banggood.com/custlink/KmDy5swKPD)) can be connected to the sideboard using an [FS-iA6B](https://www.banggood.com/custlink/KD3RFswKcT) receiver as shown in the following schematic:
-
-![wiring_iBUS_pic](/docs/pictures/wiring_ibus_rc.png)
 
 
 ---
