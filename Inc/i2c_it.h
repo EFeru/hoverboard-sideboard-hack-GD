@@ -24,12 +24,12 @@
 #include "config.h"
 
 /* Interrupt function declarations */
-void I2C0_EventIRQ_Handler(void);  	// handle I2C0 event interrupt request
-void I2C0_ErrorIRQ_Handler(void);		// handle I2C0 error interrupt request
+void I2C0_EventIRQ_Handler(void);   // handle I2C0 event interrupt request
+void I2C0_ErrorIRQ_Handler(void);   // handle I2C0 error interrupt request
 
 #ifdef AUX45_USE_I2C
-void I2C1_EventIRQ_Handler(void);  	// handle I2C1 event interrupt request
-void I2C1_ErrorIRQ_Handler(void);		// handle I2C1 error interrupt request
+void I2C1_EventIRQ_Handler(void);   // handle I2C1 event interrupt request
+void I2C1_ErrorIRQ_Handler(void);   // handle I2C1 error interrupt request
 #endif
 
 

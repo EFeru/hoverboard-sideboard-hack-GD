@@ -118,8 +118,22 @@ void PendSV_Handler(void)
 */
 void SysTick_Handler(void)
 {
-		tick_count_increment();
-    delay_decrement();		
+    tick_count_increment();
+    delay_decrement();
+}
+
+/*!
+    \brief      this function handles the USART0 interrupt request
+    \param[in]  none
+    \param[out] none
+    \retval     none
+*/
+void USART0_IRQHandler(void)
+{
+    if(RESET != usart_interrupt_flag_get(USART0, USART_INT_FLAG_IDLE)) {    // Check for IDLE line interrupt
+        usart_flag_clear(USART0, USART_FLAG_IDLE);                          // Clear IDLE line flag (otherwise it will continue to enter interrupt)
+        usart0_rx_check();                                                  // Check for data to process
+    }
 }
 
 /*!
@@ -129,10 +143,10 @@ void SysTick_Handler(void)
     \retval     none
 */
 void USART1_IRQHandler(void)
-{    
+{
     if(RESET != usart_interrupt_flag_get(USART1, USART_INT_FLAG_IDLE)) {    // Check for IDLE line interrupt
         usart_flag_clear(USART1, USART_FLAG_IDLE);                          // Clear IDLE line flag (otherwise it will continue to enter interrupt)
-        usart_rx_check();                                                   // Check for data to process
+        usart1_rx_check();                                                  // Check for data to process
     }
 }
 

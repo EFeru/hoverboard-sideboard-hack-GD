@@ -16,6 +16,7 @@ Table of Contents
 * [Example Variants ](#example-variants)
 * [Flashing](#flashing)
 * [3D Visualization Demo](#3d-visualization-demo)
+* [Wiring iBUS Receiver](#wiring-ibus-receiver)
 * [Contributions](#contributions)
 
 ---
@@ -49,8 +50,9 @@ For more details see the [MPU-6050 datasheet](/docs/1_MPU-6000-Datasheet.pdf) an
 ## Example Variants 
 
 This firmware offers currently these variants (selectable in [platformio.ini](/platformio.ini) or [config.h](/Inc/config.h)):
-- **VARIANT_DEBUG**: In this variant the user can interact with sideboard by sending commands via a Serial Monitor to observe and check the capabilities of the sideboard.
-- **VARIANT_HOVERBOARD**: In this variant the sideboard is communicating with the mainboard of a hoverboard using the [FOC firmware repository](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC).
+- **VARIANT_DEBUG**: In this variant the user can interact with sideboard by sending commands via a Serial Monitor to observe and check the capabilities of the sideboard
+- **VARIANT_HOVERCAR**: This variant can be used for Hovercar build. An RC receiver with iBUS protocol can be connected to the AUX serial Rx pin (see [schematic](#wiring-ibus-receiver))
+- **VARIANT_HOVERBOARD**: In this variant the sideboard is communicating with the mainboard of a hoverboard using the [FOC firmware repository](https://github.com/EmanuelFeru/hoverboard-firmware-hack-FOC)
 
 Of course the firmware can be further customized for other needs or projects.
 
@@ -66,23 +68,10 @@ To build and flash choose one of the following methods:
 
 ### Method 1: Using Platformio IDE
 
-Because the [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) is not yet supported by [PlatformIO](https://platformio.org/), we have to make two extra steps. These steps can be skipped once the board is supported (see [this thread](https://community.platformio.org/t/build-gd32-project-with-platformio/11944)).
-
-- go to your PlatformIO home folder (Windows: `C:\Users\<user>\.platformio`, Unix/Max: `/home/<user>/.platformio`). Then go into `packages`. If the folder `framework-spl` exists, delete it. 
-
-- unpack the `framework-spl.zip` in the `packages` folder so that the directory structure is now:
-```
-packages/
-| - framework-spl/
-| |--  gd32/
-| |--  platformio/
-| |--  stm32/
-| |--  package.json
-```
-(This folder contains the `GD32F1x0_Firmware_Library_v3.1.0` files)
-
 - open the project folder in the IDE of choice (vscode or Atom)
 - press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
+
+Note the [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) is now supported by [PlatformIO](https://platformio.org/), see [https://github.com/maxgerhardt/pio-gd32f130c6](https://github.com/maxgerhardt/pio-gd32f130c6).
 
 ### Method 2: Using Keil uVision
 
@@ -114,6 +103,14 @@ make flash
 By [converting Quaternions to Euler angles](https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles), we can make a [3D visualization example](/docs/sketch_processing/sketch_processing.pde) in [Processing](https://processing.org/) as shown below. For this Demo VARIANT_DEBUG was used.
 
 ![sketch_pic](/docs/pictures/sketch_processing_pic.png)
+
+
+---
+## Wiring iBUS Receiver
+
+An RC transmitter (Flysky [FS-i6S](https://www.banggood.com/custlink/3KvdPnfDPc) or [FS-i6X](https://www.banggood.com/custlink/KmDy5swKPD)) can be connected to the sideboard using an [FS-iA6B](https://www.banggood.com/custlink/KD3RFswKcT) receiver as shown in the following schematic:
+
+![wiring_iBUS_pic](/docs/pictures/wiring_ibus_rc.png)
 
 
 ---
