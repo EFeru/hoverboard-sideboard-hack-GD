@@ -71,7 +71,7 @@ To build and flash choose one of the following methods:
 - open the project folder in the IDE of choice (vscode or Atom)
 - press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
 
-Note the [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) is now supported by [PlatformIO](https://platformio.org/), see [https://github.com/maxgerhardt/pio-gd32f130c6](https://github.com/maxgerhardt/pio-gd32f130c6).
+Note the [GD32F130C6T6](/docs/GD32F130xx-Datasheet_Rev3.3.pdf) is now supported by [PlatformIO](https://platformio.org/), see [https://github.com/CommunityGD32Cores/platform-gd32](https://github.com/CommunityGD32Cores/platform-gd32), alongside other GD32 chips.
 
 ### Method 2: Using Keil uVision
 
