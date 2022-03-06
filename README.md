@@ -74,7 +74,7 @@ To build and flash choose one of the following methods:
 - Download the build zip file from the Artifacts section
 - Upload desired `firmware.bin` file using [ST-Link Utility](https://www.st.com/en/development-tools/stsw-link004.html)
 
-### Method 1: Using Platformio IDE
+### Method 1: Using Platformio IDE (recommended)
 
 - open the project folder in the IDE of choice (vscode or Atom)
 - press the 'PlatformIO:Build' or the 'PlatformIO:Upload' button (bottom left in vscode).
