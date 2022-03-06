@@ -66,6 +66,14 @@ If you have never flashed your sideboard before, the MCU is probably locked. To 
 
 To build and flash choose one of the following methods:
 
+### Method 0: Using GitHub Fork
+- Fork the project
+- Modify desired source files and commit
+- Go to Actions (in the repo top menu)
+- Click on latest build
+- Download the build zip file from the Artifacts section
+- Upload desired `firmware.bin` file using [ST-Link Utility](https://www.st.com/en/development-tools/stsw-link004.html)
+
 ### Method 1: Using Platformio IDE
 
 - open the project folder in the IDE of choice (vscode or Atom)
