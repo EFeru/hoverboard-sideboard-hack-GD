@@ -49,8 +49,58 @@ typedef struct{
   uint16_t  checksum;
 } SerialFeedback;
 #endif
+/*
+What does a PID controller have?
+I/O:
+  - INPUT ANGLE (int16_t)
+  - INPUT SETPOINT(int16_t)
+  - OUTPUT MOTOR SPEED(int16_t)
+CONST:
+  - Kp
+  - Ki
+  - Kd
+  - Direction
+  - Output lower/upper limits
+  - On/Off (Can be combined with direction -1 0 1)
+  - Sample_time (1ms by default)
+INTERNAL:
+  - P,I,D components (each is a product of all coefficients) 
+  - Error (Input-Setpoint) 
+  - I accumulator
+  - I limiter
+  - D last position
+CALCULATION:
+function pid_compute(PID_CONTROLLER * pid)
+  Output_tmp = (err * Kp * dir) + (I_accum * Ki * dir) + ((input - last_input) * Kd * dir)
+
+  if |Output not in limits then clamp it
+
+  I_accum += err*sample_time
+  if I_accum more than limits then clamp, otherwise proceed
+  last_input = input
+*/
+typedef struct{
+  //Inputs / Outputs
+  float input, setpoint, output;
+  int16_t motor_output;
+  //Constants
+  float Kp, Ki, Kd;
+  float outputLimit, I_limit;
+  int16_t dir, sampleTime;
+  //Internal variables (only modified by pid controller)
+  float P, I, D;
+  float err;
+  float I_accumulator;
+  float last_input;
+} PID_CONTROLLER;
+
+typedef PID_CONTROLLER * PTR_PID_CONTROLLER;
+
+
+
 
 /* Tx structure USART AUX */
+
 #ifdef SERIAL_AUX_TX
 typedef struct{
   uint16_t  start;
@@ -77,6 +127,22 @@ void consoleLog(char *message);
 void toggle_led(uint32_t gpio_periph, uint32_t pin);
 void intro_demo_led(uint32_t tDelay);
 uint8_t switch_check(uint16_t ch, uint8_t type);
+
+
+/* PID related functions */
+void pid_compute(PTR_PID_CONTROLLER pid);
+void pid_init(PTR_PID_CONTROLLER pid,
+              float P_k,
+              float I_k,
+              float D_k,
+              float setP,
+              float out_lim,
+              float I_lim, int16_t direction, int16_t sample_t);
+void pid_read_mpu_angle(PTR_PID_CONTROLLER pid);
+void pid_get_motor_output(PTR_PID_CONTROLLER pid, int16_t *output);
+void pid_log_output(PTR_PID_CONTROLLER pid);
+void pid_set_sample_time(PTR_PID_CONTROLLER pid, uint16_t stime);
+
 
 /* input initialization function */
 void input_init(void);

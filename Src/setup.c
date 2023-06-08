@@ -26,7 +26,7 @@
 #include "util.h"
 
 // Global variables
-
+PID_CONTROLLER pid_data;
 
 // Private variables
 static rcu_periph_enum USART_CLK[USARTn]        = { USART0_CLK,
@@ -56,6 +56,9 @@ static uint32_t USART_TDATA_ADDRESS[USARTn]     = { USART0_TDATA_ADDRESS,
 static uint32_t USART_RDATA_ADDRESS[USARTn]     = { USART0_RDATA_ADDRESS,
                                                     USART1_RDATA_ADDRESS
                                                   };
+
+
+
 
 
 void gpio_config(void) {

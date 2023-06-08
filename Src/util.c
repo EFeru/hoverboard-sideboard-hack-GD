@@ -293,6 +293,61 @@ void handle_sensors(void) {
     }
 }
 
+//TODO: Create descriptions for those functions
+void pid_read_mpu_angle(PTR_PID_CONTROLLER pid){
+    pid->input = mpu.euler.pitch;
+}
+void pid_get_motor_output(PTR_PID_CONTROLLER pid, int16_t *output){
+    *output = pid->motor_output;
+}
+void pid_log_output(PTR_PID_CONTROLLER pid){
+    log_i("PID controller output:%d\r\n",pid->motor_output);
+}
+void pid_init(PTR_PID_CONTROLLER pid,
+              float P_k,
+              float I_k,
+              float D_k,
+              float setP,
+              float out_lim,
+              float I_lim, int16_t direction, int16_t sample_time)
+{
+    pid->Kp             = P_k;
+    pid->Ki             = I_k;
+    pid->Kd             = D_k;
+    pid->setpoint       = setP;
+    pid->I_limit        = I_lim;
+    pid->outputLimit    = out_lim;
+    pid->sampleTime     = sample_time;
+    pid->dir            = direction;
+}
+
+void pid_set_sample_time(PTR_PID_CONTROLLER pid, uint16_t stime){
+    pid->sampleTime = stime;
+}
+/*
+ * Step the PID controller
+ */
+void pid_compute(PTR_PID_CONTROLLER pid){
+    pid->err = pid->setpoint - pid->input;
+    //Calculate P,I,D components
+    pid->P = pid->err                       * pid->dir * pid->Kp;
+    pid->I = pid->I_accumulator             * -(pid->dir);
+    pid->D = (pid->input - pid->last_input) * pid->dir * pid->Kd;
+    //Sum all the components and apply limits
+    pid->output = CLAMP(pid->P + pid->I + pid->D,
+                             -(pid->outputLimit), 
+                              (pid->outputLimit));
+    //Copy (float)output into (int16_t)motor_output
+    pid->motor_output = pid->output;
+    //Put the error into the I accumulator
+    pid->I_accumulator += pid->err * pid->sampleTime * pid->Ki;
+    pid->I_accumulator = CLAMP(pid->I_accumulator, 
+                               -(pid->I_limit), 
+                                (pid->I_limit));
+    //Remember last value for the Derivative
+    pid->last_input = pid->input;
+}
+
 /*
  * Handle of the USART data
  */

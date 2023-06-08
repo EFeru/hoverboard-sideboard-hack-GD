@@ -104,8 +104,18 @@
 
 /* ==================================== VARIANT HOVERBOARD ==================================== */
 #ifdef VARIANT_HOVERBOARD
-  #define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
-  #define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
+  #define SERIAL_DEBUG                      // [-] Define for Serial Control via the serial port
+  //#define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
+
+  //PID controller settings
+  #define def_kp             0.05
+  #define def_ki             0
+  #define def_kd             0
+  #define def_setpoint       0
+  #define def_I_limit        100
+  #define def_outputLimit    400
+  #define def_sampleTime     1
+  #define def_direction      -1
 #endif
 
 

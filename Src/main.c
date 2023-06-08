@@ -30,6 +30,7 @@
 #include "mpu6050_dmp.h"
 
 uint32_t     main_loop_counter;                         // main loop counter to perform task scheduling inside main()
+PID_CONTROLLER pid_data;
 
 int main(void)
 {
@@ -45,10 +46,15 @@ int main(void)
     i2c_config();                                       // I2C config
     i2c_nvic_config();                                  // I2C interrupt configuration
     input_init();                                       // Input initialization
+    pid_init(&pid_data, def_kp, def_ki, def_kd, def_setpoint, def_outputLimit, def_I_limit, def_sampleTime, def_direction);
 
     while(1) {
 
         delay_1ms(DELAY_IN_MAIN_LOOP);
+
+        pid_read_mpu_angle(&pid_data);
+        pid_compute(&pid_data);
+        pid_log_output(&pid_data);
 
         handle_mpu6050();                               // Handle of the MPU-6050 IMU sensor
         handle_sensors();                               // Handle of the optical sensors
