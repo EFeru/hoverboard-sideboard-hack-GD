@@ -380,6 +380,8 @@ void handle_usart(void) {
         }
     #endif
 
+
+
     // Tx USART AUX
     #ifdef SERIAL_AUX_TX
         if (main_loop_counter % 5 == 0 && dma_transfer_number_get(USART0_TX_DMA_CH) == 0) {     // Check if DMA channel counter is 0 (meaning all data has been transferred)
@@ -429,6 +431,91 @@ void handle_usart(void) {
     #endif
 }
 
+/*
+ * Handle UART data (Send PID-balance commands)
+ */
+/*
+ * Handle of the USART data
+ */
+void pid_handle_usart(PTR_PID_CONTROLLER pid) {
+    // Tx USART MAIN
+    #ifdef SERIAL_CONTROL
+        if (main_loop_counter % 5 == 0 && dma_transfer_number_get(USART1_TX_DMA_CH) == 0) {     // Check if DMA channel counter is 0 (meaning all data has been transferred)
+            Sideboard.start     = (uint16_t)SERIAL_START_FRAME;
+            Sideboard.pitch     = (int16_t)mpu.euler.pitch;
+            Sideboard.dPitch    = (int16_t)mpu.gyro.y;
+            Sideboard.cmd1      = (int16_t)pid->motor_output;
+            Sideboard.cmd2      = (int16_t)pid->motor_output; 
+            Sideboard.sensors   = (uint16_t)( (cmdSwitch << 8)  | (sensor1 | (sensor2 << 1) | (mpuStatus << 2)) );
+            Sideboard.checksum  = (uint16_t)(Sideboard.start ^ Sideboard.pitch ^ Sideboard.dPitch ^ Sideboard.cmd1 ^ Sideboard.cmd2 ^ Sideboard.sensors);
+        
+            dma_channel_disable(USART1_TX_DMA_CH);
+            DMA_CHCNT(USART1_TX_DMA_CH)     = sizeof(Sideboard);
+            DMA_CHMADDR(USART1_TX_DMA_CH)   = (uint32_t)&Sideboard;
+            dma_channel_enable(USART1_TX_DMA_CH);
+        }
+    #endif
+    // Rx USART MAIN
+    #ifdef SERIAL_FEEDBACK
+        if (timeoutCntSerial1++ >= SERIAL_TIMEOUT) {                // Timeout qualification
+            timeoutFlagSerial1 = 1;                                 // Timeout detected
+            timeoutCntSerial1  = SERIAL_TIMEOUT;                    // Limit timout counter value
+        }
+        if (timeoutFlagSerial1 && main_loop_counter % 100 == 0) {   // In case of timeout bring the system to a Safe State and indicate error if desired
+            toggle_led(LED3_GPIO_Port, LED3_Pin);                   // Toggle the Yellow LED every 100 ms
+        }
+    #endif
+
+    
+
+    // Tx USART AUX
+    #ifdef SERIAL_AUX_TX
+        if (main_loop_counter % 5 == 0 && dma_transfer_number_get(USART0_TX_DMA_CH) == 0) {     // Check if DMA channel counter is 0 (meaning all data has been transferred)
+            AuxTx.start     = (uint16_t)SERIAL_START_FRAME;
+            AuxTx.signal1   = (int16_t)sensor1;
+            AuxTx.signal2   = (int16_t)sensor2;
+            AuxTx.checksum  = (uint16_t)(AuxTx.start ^ AuxTx.signal1 ^ AuxTx.signal2);
+        
+            dma_channel_disable(USART0_TX_DMA_CH);
+            DMA_CHCNT(USART0_TX_DMA_CH)     = sizeof(AuxTx);
+            DMA_CHMADDR(USART0_TX_DMA_CH)   = (uint32_t)&AuxTx;
+            dma_channel_enable(USART0_TX_DMA_CH);
+        }
+    #endif
+    // Rx USART AUX
+    #ifdef SERIAL_AUX_RX
+        #ifdef CONTROL_IBUS
+        if (!timeoutFlagSerial0) {
+            for (uint8_t i = 0; i < (IBUS_NUM_CHANNELS * 2); i+=2) {
+                ibus_captured_value[(i/2)] = CLAMP(command.channels[i] + (command.channels[i+1] << 8) - 1000, 0, 1000); // 1000-2000 -> 0-1000
+            }
+            cmd1        = (ibus_captured_value[0] - 500) * 2;                           // Channel 1
+            cmd2        = (ibus_captured_value[1] - 500) * 2;                           // Channel 2
+            cmdSwitch   = (uint16_t)(switch_check(ibus_captured_value[6],0)      |      // Channel 7
+                                     switch_check(ibus_captured_value[7],1) << 1 |      // Channel 8
+                                     switch_check(ibus_captured_value[8],1) << 3 |      // Channel 9
+                                     switch_check(ibus_captured_value[9],0) << 5);      // Channel 10
+        }
+        #endif
+
+        if (timeoutCntSerial0++ >= SERIAL_TIMEOUT) {                // Timeout qualification
+            timeoutFlagSerial0 = 1;                                 // Timeout detected
+            timeoutCntSerial0  = SERIAL_TIMEOUT;                    // Limit timout counter value
+            cmd1 = cmd2 = 0;                                        // Set commands to 0
+            cmdSwitch &= ~(1U << 0);                                // Clear Bit 0, to switch to default control input
+        }
+        // if (timeoutFlagSerial0 && main_loop_counter % 100 == 0) {   // In case of timeout bring the system to a Safe State and indicate error if desired
+        //     toggle_led(LED2_GPIO_Port, LED2_Pin);                   // Toggle the Green LED every 100 ms
+        // }
+
+        #ifdef SERIAL_DEBUG
+            // Print MPU data to Console
+            if (main_loop_counter % 50 == 0) {
+                aux_print_to_console();
+            }
+        #endif
+    #endif
+}
 /*
  * Handle of the sideboard LEDs
  */

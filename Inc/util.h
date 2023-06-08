@@ -49,6 +49,28 @@ typedef struct{
   uint16_t  checksum;
 } SerialFeedback;
 #endif
+
+#ifdef USART_BOARD_CONTROL
+typedef struct{
+  uint16_t start;
+  int16_t  steer;
+  int16_t  speed;
+  uint16_t checksum;
+} SerialCommand;
+
+
+typedef struct{
+  uint16_t start;
+  int16_t  cmd1;
+  int16_t  cmd2;
+  int16_t  speedR_meas;
+  int16_t  speedL_meas;
+  int16_t  batVoltage;
+  int16_t  boardTemp;
+  uint16_t cmdLed;
+  uint16_t checksum;
+} SerialFeedback;
+#endif
 /*
 What does a PID controller have?
 I/O:
@@ -151,6 +173,7 @@ void input_init(void);
 void handle_mpu6050(void);
 void handle_sensors(void);
 void handle_usart(void);
+void pid_handle_usart(PTR_PID_CONTROLLER pid);
 void handle_leds(void);
 
 /* usart1 read functions */

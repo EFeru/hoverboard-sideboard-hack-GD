@@ -55,10 +55,15 @@ int main(void)
         pid_read_mpu_angle(&pid_data);
         pid_compute(&pid_data);
         pid_log_output(&pid_data);
+        
 
         handle_mpu6050();                               // Handle of the MPU-6050 IMU sensor
         handle_sensors();                               // Handle of the optical sensors
-        handle_usart();                                 // Handle of the USART data
+        #ifdef CONTROL_PID
+          pid_handle_usart(&pid_data);
+        #else
+          handle_usart();                                 // Handle of the USART data
+        #endif
         handle_leds();                                  // Handle of the sideboard LEDs
 
         main_loop_counter++;
