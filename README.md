@@ -1,14 +1,37 @@
-# hoverboard-sideboard-hack-GD
 
-[![Build status](https://github.com/EFeru/hoverboard-sideboard-hack-GD/actions/workflows/build_on_commit.yml/badge.svg)](https://github.com/EFeru/hoverboard-sideboard-hack-GD/actions/workflows/build_on_commit.yml)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CU2SWN2XV9SCY&currency_code=EUR&source=url)
+## hoverboard-sideboard-hack-GD with a PID balance controller
 
-This repository implements the firmware for the hoveboard sideboards. The hoveboard comes with two identical sideboards that can be flashed with this firmware.
+This repository implements the firmware for the hoverboard sideboards. The hoverboard comes with two identical sideboards that can be flashed with this firmware.
 
-### ► If you have an STM32 sideboard check-out the repo [hoverboard-sideboard-hack-STM](https://github.com/EFeru/hoverboard-sideboard-hack-STM)
+Current state of things:
+*  -The two boards communicate well. The ESC runs FOC firmware by Emanuel Feru.
+*  -The protocol is USART, the ESC board should be flashed with "VARIANT_USART" in order to start communicating 
+*  with the sensor board
+*  -In the ESC firmware, "#define TANK_STEERING" should be uncommented for correct functioning
+*  -I still haven't completely figured out the right PIDs, I am also not sure which signs the PID weights
+*  should have. Too tired to figure it out today. With current PIDs, the hoverboard is wobbly and had a tendency
+*  to oscillate uncontrollably.
+*  -At this moment, there is only one sensor board which communicates with the controller. This means that in cu
+*  rrent configuration, you would only be able to ride the hoverboard like a segway, without steering and with t
+*  wo halves bolted together firmly 
 
----
+  TODO: 
+    
+    * - Adjust the PIDs for the hoverboard to be rideable
+    * - Solve the problem with wheels spinning uncontrolably during 3 sec after startup
+    * - Make the foot sensors activate the motors
+
+    * + Make the lights respond to battery levels?
+    * + Look into options for connecting a "steering bar", similar to those of segways. (ADC? Arduino+UART? I2C ADC?)
+    * + Possible "pushback" or "beeping" speed limiter?
+    * + Implement PID settings editing from AUX UART (is it even possible?)
+    * + Make the code more readable and improve stability (last polishing steps)
+    
+  
+
+
+Original README.md from Emanuel Feru's repository:
+
 Table of Contents
 =======================
 
