@@ -35,6 +35,16 @@ typedef struct{
   uint16_t  checksum;
 } SerialSideboard;
 #endif
+
+#ifdef PID_USART_CONTROL
+typedef struct{
+  uint16_t start;
+  int16_t  cmd1;        //Steer by default
+  int16_t  cmd2;        //Speed by default
+  uint16_t checksum;
+} UsartSideboard;
+#endif
+
 /* Rx structure USART MAIN */
 #ifdef SERIAL_FEEDBACK
 typedef struct{
@@ -50,27 +60,7 @@ typedef struct{
 } SerialFeedback;
 #endif
 
-#ifdef USART_BOARD_CONTROL
-typedef struct{
-  uint16_t start;
-  int16_t  steer;
-  int16_t  speed;
-  uint16_t checksum;
-} SerialCommand;
 
-
-typedef struct{
-  uint16_t start;
-  int16_t  cmd1;
-  int16_t  cmd2;
-  int16_t  speedR_meas;
-  int16_t  speedL_meas;
-  int16_t  batVoltage;
-  int16_t  boardTemp;
-  uint16_t cmdLed;
-  uint16_t checksum;
-} SerialFeedback;
-#endif
 /*
 What does a PID controller have?
 I/O:
@@ -93,13 +83,13 @@ INTERNAL:
   - D last position
 CALCULATION:
 function pid_compute(PID_CONTROLLER * pid)
-  Output_tmp = (err * Kp * dir) + (I_accum * Ki * dir) + ((input - last_input) * Kd * dir)
+  Output_tmp = (err * Kp * dir) + (I_accum * Ki * dir) + ((input - last_err) * Kd * dir)
 
   if |Output not in limits then clamp it
 
   I_accum += err*sample_time
   if I_accum more than limits then clamp, otherwise proceed
-  last_input = input
+  last_err = input
 */
 typedef struct{
   //Inputs / Outputs
@@ -113,7 +103,7 @@ typedef struct{
   float P, I, D;
   float err;
   float I_accumulator;
-  float last_input;
+  float last_err;
 } PID_CONTROLLER;
 
 typedef PID_CONTROLLER * PTR_PID_CONTROLLER;

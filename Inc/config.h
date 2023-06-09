@@ -107,13 +107,46 @@
   
   //#define DEBUG
 
+  /* Current state of things:
+  -The two boards communicate well. The ESC runs FOC firmware by Emanuel Feru.
+  -The protocol is USART, the ESC board should be flashed with "VARIANT_USART" in order to start communicating 
+  with the sensor board
+  -In the ESC firmware, "#define TANK_STEERING" should be uncommented for correct functioning
+  -I still haven't completely figured out the right PIDs, I am also not sure which signs the PID weights
+  should have. Too tired to figure it out today. With current PIDs, the hoverboard is wobbly and had a tendency
+  to oscillate uncontrollably.
+  -At this moment, there is only one sensor board which communicates with the controller. This means that in cu
+  rrent configuration, you would only be able to ride the hoverboard like a segway, without steering and with t
+  wo halves bolted together firmly 
+  TODO: 
+    
+    - Adjust the PIDs for the hoverboard to be rideable
+    - Solve the problem with wheels spinning uncontrolably during 3 sec after startup
+    - Make the foot sensors activate the motors
+
+    + Make the lights respond to battery levels?
+    + Look into options for connecting a "steering bar", similar to those of segways. (ADC? Arduino+UART? I2C ADC?)
+    + Possible "pushback" or "beeping" speed limiter?
+    + Implement PID settings editing from AUX UART (is it even possible?)
+    
+  
+  */
+
   //PID controller settings
-  #define def_kp             0.05
-  #define def_ki             0
-  #define def_kd             0
+  /*
+  ADJUST LOG
+  P:
+    0.2 - crazy oscillation, unusable
+    0.05 - pretty weak, but no oscillations!
+    0.09 - moderate strenght, not too weak, but slight signs of oscillation
+    *I will have to retest it, I changed some logic in the controller
+      */
+  #define def_kp             0.15
+  #define def_ki             -0.003
+  #define def_kd             0 
   #define def_setpoint       0
-  #define def_I_limit        100
-  #define def_outputLimit    400
+  #define def_I_limit        10000
+  #define def_outputLimit    300
   #define def_sampleTime     1
   #define def_direction      -1
 
@@ -121,7 +154,7 @@
   #ifdef DEBUG
     #define SERIAL_DEBUG
   #else   
-    #define SERIAL_CONTROL                      // [-] Define for Serial Control via the serial port
+    #define PID_USART_CONTROL                   // [-] Define for Serial Control via the serial port
     #define SERIAL_FEEDBACK                     // [-] Define for Serial Feedback via the serial port
     #define CONTROL_PID                         // [-] Define for sending PID balancing commands
   #endif
@@ -130,6 +163,12 @@
 
 
 /* ==================================== VALIDATE SETTINGS ==================================== */
+#ifdef PID_USART_CONTROL
+  #define CONTROL_PID
+  #undef SERIAL_DEBUG
+  #undef SERIAL_CONTROL
+#endif
+
 #if defined(SERIAL_DEBUG) && defined(SERIAL_CONTROL)
   #error SERIAL_DEBUG and SERIAL_CONTROL not allowed. It is on the same cable.
 #endif

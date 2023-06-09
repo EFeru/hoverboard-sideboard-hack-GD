@@ -59,10 +59,10 @@ int main(void)
 
         handle_mpu6050();                               // Handle of the MPU-6050 IMU sensor
         handle_sensors();                               // Handle of the optical sensors
-        #ifdef CONTROL_PID
-          pid_handle_usart(&pid_data);
+        #ifdef PID_USART_CONTROL
+          pid_handle_usart(&pid_data);                  // Handle the simpler version of USART
         #else
-          handle_usart();                                 // Handle of the USART data
+          handle_usart();                               // Handle of the Hovercar USART data
         #endif
         handle_leds();                                  // Handle of the sideboard LEDs
 

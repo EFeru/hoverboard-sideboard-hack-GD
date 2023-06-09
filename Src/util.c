@@ -33,6 +33,10 @@
 static SerialSideboard Sideboard;
 #endif
 
+#ifdef PID_USART_CONTROL
+static UsartSideboard Sideboard;
+#endif
+
 #if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
 static uint8_t  rx1_buffer[SERIAL_BUFFER_SIZE]; // USART Rx DMA circular buffer
 static uint32_t rx1_buffer_len = ARRAY_LEN(rx1_buffer);
@@ -196,7 +200,7 @@ uint8_t switch_check(uint16_t ch, uint8_t type) {
 /* =========================== Input Initialization Function =========================== */
 
 void input_init(void) {
-    #ifdef SERIAL_CONTROL
+    #if defined(SERIAL_CONTROL) || defined(PID_USART_CONTROL)
         usart_Tx_DMA_config(USART_MAIN, (uint8_t *)&Sideboard, sizeof(Sideboard));
     #endif
     #if defined(SERIAL_DEBUG) || defined(SERIAL_FEEDBACK)
@@ -319,6 +323,9 @@ void pid_init(PTR_PID_CONTROLLER pid,
     pid->outputLimit    = out_lim;
     pid->sampleTime     = sample_time;
     pid->dir            = direction;
+    pid->motor_output   = 0;
+    pid->output         = 0;
+    pid->input          = setP;
 }
 
 void pid_set_sample_time(PTR_PID_CONTROLLER pid, uint16_t stime){
@@ -330,9 +337,9 @@ void pid_set_sample_time(PTR_PID_CONTROLLER pid, uint16_t stime){
 void pid_compute(PTR_PID_CONTROLLER pid){
     pid->err = pid->setpoint - pid->input;
     //Calculate P,I,D components
-    pid->P = pid->err                       * pid->dir * pid->Kp;
-    pid->I = pid->I_accumulator             * -(pid->dir);
-    pid->D = (pid->input - pid->last_input) * pid->dir * pid->Kd;
+    pid->P = pid->err                                    * pid->dir       * pid->Kp;
+    pid->I = pid->I_accumulator                          * pid->dir     * pid->Ki;
+    pid->D = (pid->err - pid->last_err)/pid->sampleTime  * pid->dir     * pid->Kd;
     //Sum all the components and apply limits
     pid->output = CLAMP(pid->P + pid->I + pid->D,
                              -(pid->outputLimit), 
@@ -340,12 +347,12 @@ void pid_compute(PTR_PID_CONTROLLER pid){
     //Copy (float)output into (int16_t)motor_output
     pid->motor_output = pid->output;
     //Put the error into the I accumulator
-    pid->I_accumulator += pid->err * pid->sampleTime * pid->Ki;
+    pid->I_accumulator += pid->err * pid->sampleTime;
     pid->I_accumulator = CLAMP(pid->I_accumulator, 
                                -(pid->I_limit), 
                                 (pid->I_limit));
     //Remember last value for the Derivative
-    pid->last_input = pid->input;
+    pid->last_err = pid->err;
 }
 
 /*
@@ -434,20 +441,14 @@ void handle_usart(void) {
 /*
  * Handle UART data (Send PID-balance commands)
  */
-/*
- * Handle of the USART data
- */
 void pid_handle_usart(PTR_PID_CONTROLLER pid) {
     // Tx USART MAIN
-    #ifdef SERIAL_CONTROL
+    #ifdef PID_USART_CONTROL
         if (main_loop_counter % 5 == 0 && dma_transfer_number_get(USART1_TX_DMA_CH) == 0) {     // Check if DMA channel counter is 0 (meaning all data has been transferred)
             Sideboard.start     = (uint16_t)SERIAL_START_FRAME;
-            Sideboard.pitch     = (int16_t)mpu.euler.pitch;
-            Sideboard.dPitch    = (int16_t)mpu.gyro.y;
             Sideboard.cmd1      = (int16_t)pid->motor_output;
             Sideboard.cmd2      = (int16_t)pid->motor_output; 
-            Sideboard.sensors   = (uint16_t)( (cmdSwitch << 8)  | (sensor1 | (sensor2 << 1) | (mpuStatus << 2)) );
-            Sideboard.checksum  = (uint16_t)(Sideboard.start ^ Sideboard.pitch ^ Sideboard.dPitch ^ Sideboard.cmd1 ^ Sideboard.cmd2 ^ Sideboard.sensors);
+            Sideboard.checksum  = (uint16_t)(Sideboard.start ^ Sideboard.cmd1 ^ Sideboard.cmd2);
         
             dma_channel_disable(USART1_TX_DMA_CH);
             DMA_CHCNT(USART1_TX_DMA_CH)     = sizeof(Sideboard);
