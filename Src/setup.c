@@ -314,6 +314,10 @@ void i2c_config(void) {
     i2c_enable(MPU_I2C);
     /* enable acknowledge */
     i2c_ack_config(MPU_I2C, I2C_ACK_ENABLE);
+
+    i2c_interrupt_enable(MPU_I2C, I2C_INT_ERR);
+    i2c_interrupt_enable(MPU_I2C, I2C_INT_EV);
+    i2c_interrupt_enable(MPU_I2C, I2C_INT_BUF);
     
     #ifdef AUX45_USE_I2C
         /* I2C clock configure */
