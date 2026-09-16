@@ -25,6 +25,10 @@ Table of Contents
 The original sideboard hardware supports one 4-pin cable that originally was connected to the hoveboard mainboard. It breaks out GND, 12/15V and USART. Additionally, two ports are used to connect to the LED boards. On the back of the board, two Photo Interrupter Optical Switches can be found, originally used to detect if a human is standing on the hoverboard.
 ![sideboard](/docs/pictures/sideboard_pinout.png)
 
+![sideboard GD32](/docs/pictures/sideboard_pinout_GD.jpeg)
+
+![sideboard GD32 pinout by eroboticdude](/docs/pictures/sideboard_pinout_by_eroboticdude_GD.png)
+
 The LED boards consist of colored LEDs (blue, red, green, orange) used for design and to inform the user about the current hoverboard state. Below the pinout of the LED boards is shown.
 ![ledboard](/docs/pictures/ledboard_pinout.png)
 
