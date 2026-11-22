@@ -15,6 +15,7 @@
   *
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  *nova
 */
 
 // Define to prevent recursive inclusion
@@ -28,7 +29,7 @@
 // or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_DEBUG". Select only one at a time.
 #if !defined(PLATFORMIO)
   // #define VARIANT_DEBUG                    // Variant for debugging and checking the capabilities of the side-board
-  // #define VARIANT_HOVERCAR                 // Variant for using the side-boards connected to the Hoverboard mainboard
+  #define VARIANT_HOVERCAR                 // Variant for using the side-boards connected to the Hoverboard mainboard
   // #define VARIANT_HOVERBOARD               // Variant for using the side-boards connected to the Hoverboard mainboard
 #endif
 
